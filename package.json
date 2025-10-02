@@ -1,0 +1,28 @@
+{
+  "name": "chefcode-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "chefcode",
+    "restaurant",
+    "api",
+    "nodejs"
+  ],
+  "author": "ChefCode Team",
+  "license": "ISC",
+  "description": "ChefCode Restaurant Management API - Backend server for mobile and web applications",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "node-fetch": "^2.7.0"
+  }
+}
