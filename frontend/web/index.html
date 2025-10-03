@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefCode - Workflow Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- ChefCode API Layer -->
+    <script src="../shared/api.js"></script>
+    <script src="../shared/utils.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@30    /* Stili per i pulsanti del footer ChatGPT */
+    #voice-footer #send-btn,
+    #voice-footer #upload-btn,
+    #voice-footer #voice-chat-btn {
+        background: linear-gradient(145deg, #ffffff, #e8e8e8) !important;
+        border: 2px solid #ffffff !important;
+        color: #2c3e50 !important;
+        border-radius: 50% !important;
+        width: 45px !important;
+        height: 45px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+    }
+    
+    #voice-footer #send-btn:hover,
+    #voice-footer #upload-btn:hover,
+    #voice-footer #voice-chat-btn:hover {
+        background: linear-gradient(145deg, #f8f9fa, #ffffff) !important;
+        border-color: #a9cce3 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+        color: #1e3a8a !important;
+    }
+    
+    #voice-footer #send-btn:active,
+    #voice-footer #upload-btn:active,
+    #voice-footer #voice-chat-btn:active {
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Stato attivo per il pulsante voice-chat quando sta registrando */
+    #voice-footer #voice-chat-btn.recording {
+        background: linear-gradient(145deg, #ff6b6b, #ff5252) !important;
+        border-color: #ff4444 !important;
+        color: #ffffff !important;
+        animation: pulse 1.5s infinite !important;
+    }splay=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <button class="home-button" id="chefcode-logo-btn">
+                <i class="fas fa-home"></i>
+            </button>
+        </div>
+        <div class="header-center">
+            <h1 class="logo">ChefCode</h1>
+        </div>
+        <div class="header-right">
+            <div class="account-menu">
+                <button class="account-button">Account <span class="arrow-down">&#9660;</span></button>
+                <div class="dropdown-content">
+                    <a href="#">Profile</a>
+                    <a href="#">Settings</a>
+                    <a href="#">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- ...existing code... -->
+        <section id="step-selection-page" class="page-section active">
+            <div class="step-buttons-grid">
+                <button class="big-step-button" data-step="goods-in">
+                    <i class="fas fa-box-open"></i>
+                    <span>GOODS IN</span>
+                </button>
+                <button class="big-step-button" data-step="recipe-set-up">
+                    <i class="fas fa-utensils"></i>
+                    <span>RECIPE SET-UP</span>
+                </button>
+                <button class="big-step-button" data-step="production">
+                    <i class="fas fa-industry"></i>
+                    <span>PRODUCTION</span>
+                </button>
+                <button class="big-step-button" data-step="sales">
+                    <i class="fas fa-cash-register"></i>
+                    <span>SALES</span>
+                </button>
+                <button class="big-step-button" data-step="end-of-day">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>SHOPPING LIST</span>
+                </button>
+                <button class="big-step-button" data-step="dashboard-selection">
+                    <i class="fas fa-chart-line"></i>
+                    <span>DASHBOARD</span>
+                </button>
+                <button class="big-step-button" data-step="inventory-page">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>INVENTORY</span>
+                </button>
+                <button class="big-step-button" data-step="add-module">
+                    <i class="fas fa-plus"></i>
+                    <span>ADD MODULE</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="input-detail-page" class="page-section">
+            <div id="input-pages-container">
+                
+                <div id="goods-in-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>GOODS IN</h3></div>
+                    <div class="goods-in-buttons-grid">
+                        <button class="big-step-button" data-action="invoice-photo"><i class="fas fa-camera"></i><span>INVOICE PHOTO (OCR)</span></button>
+                        <button class="big-step-button" data-action="voice-input" style="display:none;"><i class="fas fa-microphone"></i><span>VOICE INPUT</span></button>
+                        <button class="big-step-button" data-action="manual-input"><i class="fas fa-keyboard"></i><span>MANUAL INPUT</span></button>
+                    </div>
+                </div>
+
+                <div id="manual-input-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="goods-in-content"><i class="fas fa-arrow-left"></i> Back</button><h3>MANUAL INPUT</h3></div>
+                    <form id="manual-entry-form" class="manual-form">
+                        <div class="form-group full-width"><label for="item-name">Item Name</label><input type="text" id="item-name" name="item-name" placeholder="e.g., San Marzano Tomatoes" required></div>
+                        <div class="form-group"><label for="item-quantity">Quantity</label><input type="number" id="item-quantity" name="item-quantity" placeholder="e.g., 25" step="0.01" required></div>
+                        <div class="form-group"><label for="item-unit">Unit</label><input type="text" id="item-unit" name="item-unit" placeholder="e.g., kg" required></div>
+                        <div class="form-group"><label for="item-category">Category</label><input type="text" id="item-category" name="item-category" placeholder="e.g., Vegetables" required></div>
+                        <div class="form-group"><label for="item-price">Unit Price (€)</label><input type="number" id="item-price" name="item-price" placeholder="e.g., 2.50" step="0.01" required></div>
+                    <div style="text-align:center; margin-top:16px;">
+                        <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Add to Inventory</button>
+                    </div>
+                    </form>
+                </div>
+
+                <div id="dashboard-selection-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>Select Dashboard</h3></div>
+                    <div class="step-buttons-grid">
+                        <button class="big-step-button" data-step="kitchen-dashboard"><i class="fas fa-utensils"></i><span>KITCHEN DASHBOARD</span></button>
+                        <button class="big-step-button" data-step="management-dashboard"><i class="fas fa-chart-bar"></i><span>MANAGEMENT DASHBOARD</span></button>
+                    </div>
+                </div>
+                
+                <div id="kitchen-dashboard-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="dashboard-selection-content"><i class="fas fa-arrow-left"></i> Back</button><h3>Chef's Operational Dashboard</h3></div>
+                    <div class="new-dashboard-grid kitchen-dash"><div class="new-dash-card"><h5 class="new-card-title">Today's Work Plan (Mise en Place)</h5><table class="prep-list-table"><thead><tr><th>Priority</th><th>Task</th><th>Status</th></tr></thead><tbody><tr><td><span class="priority high">High</span></td><td>Prepare Amatriciana Sauce (5L)</td><td><span class="status done">Done</span></td></tr><tr><td><span class="priority high">High</span></td><td>Clean Mussels and Clams</td><td><span class="status done">Done</span></td></tr><tr><td><span class="priority medium">Medium</span></td><td>Cut Vegetables for Soffritto</td><td><span class="status pending">To Do</span></td></tr><tr><td><span class="priority medium">Medium</span></td><td>Fillet Sea Bass (10 pcs)</td><td><span class="status pending">To Do</span></td></tr></tbody></table></div><div class="new-dash-card"><h5 class="new-card-title">Today's "Hot" Items</h5><table class="hot-items-table"><thead><tr><th>Dish</th><th>Qty</th><th>Margin</th></tr></thead><tbody><tr><td>Spaghetti Carbonara</td><td>18</td><td><span class="margin good">€ 10.90</span></td></tr><tr><td>Frittura di Calamari</td><td>12</td><td><span class="margin ok">€ 9.90</span></td></tr><tr><td>Tagliata di Manzo</td><td>9</td><td><span class="margin good">€ 14.30</span></td></tr><tr><td>Tonnarelli Cacio e Pepe</td><td>7</td><td><span class="margin good">€ 9.80</span></td></tr></tbody></table></div><div class="new-dash-card"><h5 class="new-card-title">Critical Stock</h5><ul class="dash-list"><li>Guanciale (under 1 kg)</li><li>Pecorino Romano</li><li>White Wine for cooking</li></ul></div><div class="new-dash-card"><h5 class="new-card-title">Use Soon (Anti-Waste)</h5><ul class="dash-list"><li>Fresh Porcini Mushrooms</li><li>Buffalo Mozzarella</li><li>Fresh Basil</li></ul></div><div class="new-dash-card full-width"><h5 class="new-card-title">Menu Engineering Analysis</h5><div class="menu-engineering-grid"><div class="quadrant puzzle"><h6>PUZZLES ❓</h6><small>High profit, low popularity. Needs promotion.</small><p>Filetto al Pepe Verde</p></div><div class="quadrant star"><h6>STARS ⭐</h6><small>High profit, high popularity. Our champions!</small><p>Tagliata di Manzo</p><p>Spaghetti Carbonara</p></div><div class="quadrant dog"><h6>DOGS 🐶</h6><small>Low profit, low popularity. Consider removing.</small><p>Insalatona "Chef"</p></div><div class="quadrant plow-horse"><h6>PLOW-HORSES 🐴</h6><small>Low profit, high popularity. Optimize cost.</small><p>Frittura di Calamari</p></div></div></div></div>
+                </div>
+
+                <div id="management-dashboard-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="dashboard-selection-content"><i class="fas fa-arrow-left"></i> Back</button><h3>Management Dashboard</h3></div>
+                    <div class="new-dashboard-grid"><div class="new-dash-card kpi-card"><h5 class="kpi-title">REVENUE</h5><p class="kpi-amount">$895,430</p></div><div class="new-dash-card kpi-card"><h5 class="kpi-title">AVERAGE TRANSACTION</h5><p class="kpi-amount">$34.49</p><small class="kpi-change up"><i class="fas fa-caret-up"></i> 3,1%</small></div><div class="new-dash-card kpi-card"><h5 class="kpi-title">ORDERS</h5><p class="kpi-amount">25,959</p><small class="kpi-change down"><i class="fas fa-caret-down"></i> 2,5%</small></div><div class="new-dash-card tall"><h5 class="new-card-title">SALES BY MONTH</h5><div class="bar-chart-v"><div class="bar-wrapper"><div class="bar" style="height: 20%;"></div><span class="bar-label-month">Jan</span></div><div class="bar-wrapper"><div class="bar" style="height: 30%;"></div><span class="bar-label-month">Feb</span></div><div class="bar-wrapper"><div class="bar" style="height: 45%;"></div><span class="bar-label-month">Mar</span></div><div class="bar-wrapper"><div class="bar" style="height: 60%;"></div><span class="bar-label-month">Apr</span></div><div class="bar-wrapper"><div class="bar" style="height: 55%;"></div><span class="bar-label-month">May</span></div><div class="bar-wrapper"><div class="bar" style="height: 70%;"></div><span class="bar-label-month">Jun</span></div><div class="bar-wrapper"><div class="bar" style="height: 85%;"></div><span class="bar-label-month">Jul</span></div><div class="bar-wrapper"><div class="bar" style="height: 95%;"></div><span class="bar-label-month">Aug</span></div></div></div><div class="new-dash-card tall"><h5 class="new-card-title">SALES BY CHANNEL</h5><div class="chart-with-legend"><div class="pie-chart"></div><div class="channel-list"><div class="channel-item"><i class="fas fa-circle channel-icon dine-in"></i><span class="channel-label">Dine-in</span><span class="channel-perc">70%</span></div><div class="channel-item"><i class="fas fa-circle channel-icon takeaway"></i><span class="channel-label">Takeaway</span><span class="channel-perc">15%</span></div><div class="channel-item"><i class="fas fa-circle channel-icon delivery"></i><span class="channel-label">Delivery</span><span class="channel-perc">15%</span></div></div></div></div><div class="new-dash-card tall"><h5 class="new-card-title">SALES BY CATEGORY</h5><div class="bar-chart-h"><div class="bar-item"><span class="bar-label">Food</span><div class="bar-bg"><div class="bar-fg food" style="width: 62%;"></div></div><span class="bar-perc">62%</span></div><div class="bar-item"><span class="bar-label">Beverage</span><div class="bar-bg"><div class="bar-fg beverage" style="width: 21%;"></div></div><span class="bar-perc">21%</span></div><div class="bar-item"><span class="bar-label">Dessert</span><div class="bar-bg"><div class="bar-fg dessert" style="width: 11%;"></div></div><span class="bar-perc">11%</span></div><div class="bar-item"><span class="bar-label">Other</span><div class="bar-bg"><div class="bar-fg other" style="width: 6%;"></div></div><span class="bar-perc">6%</span></div></div></div></div>
+                </div>
+
+                <div id="inventory-page-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>FOOD INVENTORY</h3></div>
+                    <div class="inventory-controls">
+                        <input type="search" id="inventory-search" placeholder="Search by name..."><select id="inventory-category-filter"><option value="all">All Categories</option><option value="Vegetables">Vegetables</option><option value="Dry Goods">Dry Goods</option><option value="Dairy">Dairy</option><option value="Meat">Meat</option><option value="Oils">Oils</option><option value="Herbs">Herbs</option><option value="Pasta">Pasta</option><option value="Fish">Fish</option><option value="Legumes">Legumes</option><option value="Bakery">Bakery</option><option value="Beverages">Beverages</option><option value="Sweets">Sweets</option><option value="Condiments">Condiments</option><option value="Nuts">Nuts</option></select>
+                        <button id="expand-table-btn" class="icon-btn" title="Collapse to Summary"><i class="fas fa-chevron-up"></i></button>
+                    </div>
+                    <div class="inventory-table-container">
+                        <table>
+                            <thead><tr><th>Item</th><th>Unit Price</th><th>Unit</th><th>Quantity</th><th>Category</th><th>Total Value</th></tr></thead>
+                            <tbody id="inventory-table-body">
+                                <!-- Inventory items will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="inventory-summary"><h4>Total Inventory Value: <span id="inventory-total-value">€2,362.90</span></h4></div>
+                </div>
+
+                <div id="camera-simulation-page" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="goods-in-content"><i class="fas fa-arrow-left"></i> Back</button><h3>TAKE INVOICE PHOTO</h3></div>
+                    <div class="camera-preview-container"><div class="camera-viewfinder"><i class="fas fa-camera-retro"></i><p>Place invoice here</p></div></div>
+                    <div class="camera-controls">
+                        <button id="take-photo-btn" class="input-btn"><i class="fas fa-circle"></i><span>Take Photo</span></button>
+                        <button id="retake-photo-btn" class="input-btn" style="display: none;"><i class="fas fa-redo"></i><span>Retake Photo</span></button>
+                        <button id="confirm-photo-btn" class="input-btn" style="display: none;"><i class="fas fa-check"></i><span>Confirm Photo & OCR</span></button>
+                    </div>
+                    <div class="output-section camera-output" style="display: none;">
+                        <h4>OCR Result Simulation</h4>
+                        <ul><li>Invoice #: INV2025-07-001</li><li>Date: 03/07/2025</li><li>Supplier: Global Foods S.p.A.</li><li>Items detected: 5</li><li>Total Amount: €150.00</li></ul>
+                    </div>
+                </div>
+
+                <div id="voice-input-page-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="goods-in-content"><i class="fas fa-arrow-left"></i> Back</button><h3>VOICE INPUT</h3></div>
+                    <div class="voice-input-container">
+                        <p id="voice-status">Press the microphone to start speaking...</p>
+                        <div class="voice-mic-container"><button id="microphone-btn"><i class="fas fa-microphone"></i></button><span id="mic-label">Start Recording</span></div>
+                        <div id="voice-recognized-text" class="output-section" style="display: none;">
+                            <h4>Recognized Text</h4><p id="recognized-text-content"></p>
+                            <button id="process-voice-btn" class="input-btn"><i class="fas fa-check"></i><span>Process Input</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="recipe-set-up-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>RECIPE SET-UP</h3></div>
+                    <form id="recipe-form">
+                        <div class="form-group full-width"><label for="recipe-name">Recipe Name</label><input type="text" id="recipe-name" required placeholder="e.g., Spaghetti alla Carbonara"></div>
+                        <div class="form-group full-width"><label for="recipe-instructions">Instructions</label><textarea id="recipe-instructions" rows="4" placeholder="Describe the preparation steps..."></textarea></div>
+                    </form>
+                    <!-- === RECIPE YIELD (quanto prodotto fa 1 batch) === -->
+<div class="form-group full-width">
+    <label for="recipe-yield-qty">Recipe yield (product obtained per batch)</label>
+  <div class="yield-row">
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="number" id="recipe-yield-qty" placeholder="es. 10" step="0.01" style="width:100px;">
+            <select id="recipe-yield-unit" style="width:80px;">
+                <option value="pz">pz</option>
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+                <option value="lt">lt</option>
+                <option value="ml">ml</option>
+            </select>
+        </div>
+  </div>
+</div>
+
+                    <div class="add-ingredient-section">
+                        <div class="form-group"><label for="ingredient-select">Select Ingredient</label><select id="ingredient-select"><option value="" disabled selected>-- Choose an ingredient --</option></select></div>
+                        <div class="form-group"><label for="ingredient-qty">Quantity</label><input type="number" id="ingredient-qty" placeholder="e.g., 150"></div>
+                        <div class="form-group"><label for="ingredient-unit">Unit</label><select id="ingredient-unit"><option>g</option><option>kg</option><option>ml</option><option>l</option><option>pz</option></select></div>
+                        <button id="add-ingredient-btn" class="icon-btn"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div class="ingredients-list-container">
+                        <ul id="recipe-ingredients-list"></ul>
+                    </div>
+                    <button id="save-recipe-btn" class="submit-btn"><i class="fas fa-save"></i> Save Recipe</button>
+                </div>
+                
+                <div id="production-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>PRODUCTION</h3></div>
+<div class="add-production-task-section">
+  <!-- Recipe -->
+  <div class="form-group">
+    <label for="recipe-select-prod">Recipe to Prepare</label>
+    <select id="recipe-select-prod">
+      <option value="" disabled selected>-- Choose a recipe --</option>
+    </select>
+  </div>
+
+  <!-- Quantity -->
+  <div class="form-group">
+    <label for="production-qty">Quantity to Produce</label>
+    <input type="text" id="production-qty" placeholder="Insert Quantity">
+  </div>
+
+  <!-- Unità di misura (resta com’era) -->
+  <div class="form-group">
+    <label for="production-unit">Unit</label>
+    <select id="production-unit">
+      <option value="kg">kg</option>
+      <option value="g">g</option>
+      <option value="lt">lt</option>
+      <option value="ml">ml</option>
+      <option value="pz">pz</option>
+    </select>
+  </div>
+
+  <!-- Assign to -->
+  <div class="form-group">
+    <label for="assign-to">Assign to</label>
+    <select id="assign-to">
+      <option>Luca</option>
+      <option>Sofia</option>
+      <option>Marco</option>
+      <option>Tutti</option>
+    </select>
+  </div>
+
+  <!-- Initial Status (nuovo) -->
+ <div class="form-group">
+  <label for="initial-status">Initial Status</label>
+  <select id="initial-status">
+    <option value="todo" selected>To Do</option>
+    <option value="completed">Completed Task</option>
+  </select>
+</div>
+
+<button id="add-task-btn" class="submit-btn small-btn">
+  <i class="fas fa-plus"></i> Add to List
+    </button>
+
+        <!-- RIMOSSI I TAB BUTTON, SOLO DUE COLONNE VISIBILI -->
+    <div class="production-tasks-tabbed">
+        <div id="todo-tasks" class="task-list prod-tab-panel active"></div>
+        <div id="completed-tasks-list" class="task-list prod-tab-panel"></div>
+    </div>
+
+</div>
+                                </div>
+                </div>
+
+                <div id="sales-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>SALES</h3></div><p>Record sales and update stock.</p>
+                </div>
+                <div id="end-of-day-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>SHOPPING LIST</h3></div><p>Generate and manage your daily shopping list.</p>
+                </div>
+
+                <div id="add-module-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>Add New Module</h3></div>
+                    <p>Module creation/selection interface will be here...</p>
+                </div>
+
+            </div>
+        </section>
+    </main>
+<style>
+    main.main-container { padding-bottom: 120px; }
+    footer#voice-footer { width:100%; text-align:center; position:fixed; left:0; bottom:0; z-index:100; }
+
+    
+    /* Footer blu come l'header */
+    #voice-footer {
+        background-color: #2E4E6F !important;
+        color: #ffffff !important;
+        padding: 15px 30px !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+        margin-top: auto;
+    }
+    
+    /* Aggiorna i colori del testo nel footer */
+    #voice-footer #voice-status-label {
+        color: #ffffff !important;
+    }
+    
+    #voice-footer #chatgpt-response {
+        color: #ffffff !important;
+    }
+    
+    #voice-footer #voice-result {
+        color: #ffffff !important;
+    }
+    
+    /* Stile del pulsante microfono nel footer blu */
+    #voice-footer #voice-btn {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 50% !important;
+        color: #ffffff !important;
+        font-size: 2em !important;
+        padding: 6px 16px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    #voice-footer #voice-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Stile del pulsante Send nel footer blu */
+    #voice-footer button[type="submit"] {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease;
+    }
+    
+    #voice-footer button[type="submit"]:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    /* Stile migliorato per l'input ChatGPT */
+    #voice-footer #chatgpt-input {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 2px solid rgba(255, 255, 255, 0.8) !important;
+        color: #2c3e50 !important;
+        border-radius: 25px !important;
+        padding: 10px 16px !important;
+        font-size: 0.9em !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        transition: all 0.3s ease !important;
+        width: 200px !important;
+        height: 45px !important;
+        box-sizing: border-box !important;
+    }
+    
+    #voice-footer #chatgpt-input::placeholder {
+        color: rgba(44, 62, 80, 0.6) !important;
+        font-style: italic !important;
+    }
+    
+    #voice-footer #chatgpt-input:focus {
+        background: rgba(255, 255, 255, 1) !important;
+        border-color: #a9cce3 !important;
+        outline: none !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 8px rgba(169, 204, 227, 0.3) !important;
+        transform: scale(1.02) !important;
+    }
+</style>
+</main>
+<footer id="voice-footer">
+    <div style="display:flex; justify-content:center; align-items:center; gap:32px;">
+        <div id="chatgpt-chat" style="display:flex; flex-direction:column; align-items:center;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="chatgpt-input" placeholder="Ask me anything..." style="flex: 1;">
+                <button id="send-btn" type="button" title="Send Message" style="background: linear-gradient(145deg, #ffffff, #e8e8e8); border: 2px solid #ffffff; color: #2c3e50; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; cursor: pointer;">
+                    <i class="fas fa-paper-plane" style="font-size: 1.1em;"></i>
+                </button>
+                <button id="voice-chat-btn" type="button" title="Voice Message" style="background: linear-gradient(145deg, #ffffff, #e8e8e8); border: 2px solid #ffffff; color: #2c3e50; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; cursor: pointer;">
+                    <i class="fas fa-microphone" style="font-size: 1.1em;"></i>
+                </button>
+                <button id="upload-btn" type="button" title="Upload File" style="background: linear-gradient(145deg, #ffffff, #e8e8e8); border: 2px solid #ffffff; color: #2c3e50; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; cursor: pointer;">
+                    <i class="fas fa-plus" style="font-size: 1.2em;"></i>
+                </button>
+            </div>
+            <div id="chatgpt-response" style="margin-top:8px; font-size:0.85em; min-height:20px; max-width:350px; max-height:60px; overflow-y:auto; text-align:left; word-wrap:break-word; transition:opacity 0.3s ease; color: #ffffff;"></div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <button id="voice-btn" style="background: linear-gradient(145deg, #ffffff, #e8e8e8); border: 2px solid #ffffff; color: #2c3e50; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; cursor: pointer;">
+                <i class="fas fa-microphone" id="voice-mic-icon" style="font-size: 1.5em;"></i>
+            </button>
+            <div id="voice-status-label" style="font-size:0.9em; margin-top:6px; color:#ffffff; font-weight:500;">Press to speak</div>
+        </div>
+    </div>
+    <div id="voice-result" style="margin-top:8px; font-size:1em;"></div>
+</footer>
+    <script src="script.js"></script>
+</body>
+</html>

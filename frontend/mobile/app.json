@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "ChefCode Mobile",
+    "slug": "chefcode-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "chefcode",
+    "platforms": ["ios", "android"],
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#2c3e50"
+    },
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.chefcode.mobile",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "ChefCode needs microphone access for voice commands",
+        "NSCameraUsageDescription": "ChefCode needs camera access for barcode scanning",
+        "NSSpeechRecognitionUsageDescription": "ChefCode uses speech recognition for voice commands"
+      }
+    },
+    "android": {
+      "package": "com.chefcode.mobile",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "chefcode-mobile-project"
+      }
+    }
+  }
+}

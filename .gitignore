@@ -1,0 +1,70 @@
+# ChefCode - File da non caricare su GitHub
+
+# API Keys e file sensibili
+.env
+.env.local
+.env.production
+*.env
+*api*key*
+*secret*
+
+# File di configurazione con dati sensibili
+config.json
+backend/config.json
+
+# Node modules
+node_modules/
+*/node_modules/
+
+# Build files
+build/
+dist/
+*.apk
+*.aab
+
+# Log files
+*.log
+logs/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Android specific
+*.keystore
+*.jks
+local.properties
+android/app/debug.keystore
+
+# iOS specific (per futuri sviluppi)
+ios/
+*.xcworkspace
+*.xcuserdata
+
+# Cache directories
+.cache/
+.expo/
+.gradle/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# Files with sensitive data
+RENDER_SETUP_COPY_PASTE.txt
+COPY_ENV_TO_RENDER.bat
