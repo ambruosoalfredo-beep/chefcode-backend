@@ -6,19 +6,54 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 const app = express();
 
-// Configurazione CORS sicura per produzione
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'http://localhost:19006', 'http://localhost:8081'];
+// Configurazioni dalle variabili d'ambiente con valori di default
+const CONFIG = {
+  // Variabili obbligatorie
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  PORT: process.env.PORT || 3000,
+  
+  // CORS
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:19006,http://localhost:8081',
+  
+  // Sicurezza e performance
+  RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+  OPENAI_TIMEOUT: parseInt(process.env.OPENAI_TIMEOUT) || 30000,
+  MAX_PAYLOAD_SIZE: parseInt(process.env.MAX_PAYLOAD_SIZE) || 10,
+  
+  // Logging
+  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+  ENABLE_DETAILED_LOGS: process.env.ENABLE_DETAILED_LOGS === 'true',
+  
+  // Cache
+  AI_CACHE_DURATION: parseInt(process.env.AI_CACHE_DURATION) || 300000,
+  APP_DATA_CACHE_DURATION: parseInt(process.env.APP_DATA_CACHE_DURATION) || 60000,
+  
+  // Monitoraggio
+  HEALTH_CHECK_INTERVAL: parseInt(process.env.HEALTH_CHECK_INTERVAL) || 30000,
+  EXTERNAL_TIMEOUT: parseInt(process.env.EXTERNAL_TIMEOUT) || 15000
+};
+
+// Configurazione CORS dinamica basata su environment
+const allowedOrigins = CONFIG.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Consenti richieste senza origin (app mobili)
+    // Consenti richieste senza origin (app mobili native)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    // Se ALLOWED_ORIGINS contiene *, consenti tutto
+    if (allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    
+    // Controlla se l'origin è nella lista consentita
+    if (allowedOrigins.includes(origin) || CONFIG.NODE_ENV === 'development') {
       callback(null, true);
     } else {
+      if (CONFIG.ENABLE_DETAILED_LOGS) {
+        console.log(`🚫 CORS blocked origin: ${origin}`);
+      }
       callback(new Error('Non autorizzato da CORS policy'));
     }
   },
@@ -28,15 +63,25 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: `${CONFIG.MAX_PAYLOAD_SIZE}mb` }));
 
-// Sicurezza: ottieni API key dalle variabili d'ambiente
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-if (!OPENAI_API_KEY) {
+// Validazione variabili obbligatorie
+if (!CONFIG.OPENAI_API_KEY) {
   console.error('❌ ERRORE: OPENAI_API_KEY non configurata nelle variabili d\'ambiente');
   console.log('🔧 Configura la variabile OPENAI_API_KEY su Render o nel file .env');
+  console.log('📖 Usa il file COPY_ENV_TO_RENDER.bat per le istruzioni');
   process.exit(1);
+}
+
+// Log configurazione in sviluppo
+if (CONFIG.NODE_ENV === 'development' || CONFIG.ENABLE_DETAILED_LOGS) {
+  console.log('🔧 ChefCode Backend Configuration:');
+  console.log(`   Environment: ${CONFIG.NODE_ENV}`);
+  console.log(`   Port: ${CONFIG.PORT}`);
+  console.log(`   CORS Origins: ${CONFIG.ALLOWED_ORIGINS}`);
+  console.log(`   Rate Limit: ${CONFIG.RATE_LIMIT_MAX} req/min`);
+  console.log(`   OpenAI Timeout: ${CONFIG.OPENAI_TIMEOUT}ms`);
+  console.log(`   Log Level: ${CONFIG.LOG_LEVEL}`);
 }
 
 // Storage per i dati dell'applicazione (sincronizzato dal frontend)
@@ -138,7 +183,7 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -338,7 +383,7 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -392,10 +437,15 @@ app.get('/', (req, res) => {
   });
 });
 
-// Configura porta per Render (usa PORT dalla variabile d'ambiente)
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 ChefCode Backend API running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+// Avvio server con configurazione ottimizzata
+app.listen(CONFIG.PORT, '0.0.0.0', () => {
+  console.log(`🚀 ChefCode Backend API running on port ${CONFIG.PORT}`);
+  console.log(`🌍 Environment: ${CONFIG.NODE_ENV}`);
+  console.log(`🔗 Health check: http://localhost:${CONFIG.PORT}/health`);
+  console.log(`⚡ CORS Origins: ${CONFIG.ALLOWED_ORIGINS}`);
+  console.log(`🤖 OpenAI API: ${CONFIG.OPENAI_API_KEY ? 'Configured ✅' : 'Missing ❌'}`);
+  
+  if (CONFIG.NODE_ENV === 'production') {
+    console.log('🎯 Production mode: Optimized for Render deployment');
+  }
 });

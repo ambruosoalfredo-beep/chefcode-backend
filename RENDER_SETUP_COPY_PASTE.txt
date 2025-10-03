@@ -1,0 +1,50 @@
+# 🚀 RENDER DEPLOYMENT - ISTRUZIONI PRECISE
+# Copia e incolla questi valori esattamente come scritto!
+
+## STEP 1: Crea Web Service
+- Vai su: https://dashboard.render.com
+- Clicca "New +" → "Web Service"
+- Trova il repository: chefcode-backend
+- Clicca "Connect"
+
+## STEP 2: Configurazione Service (copia questi valori esatti)
+
+Name: chefcode-backend
+Region: Frankfurt (EU Central)
+Branch: main
+Root Directory: [LASCIA VUOTO]
+Runtime: Node
+Build Command: npm install
+Start Command: npm start
+Instance Type: Free
+
+## STEP 3: Environment Variables (copia esattamente)
+
+Clicca "Add Environment Variable" 3 volte e inserisci:
+
+VARIABILE 1:
+Key: NODE_ENV
+Value: production
+
+VARIABILE 2:
+Key: OPENAI_API_KEY
+Value: YOUR_OPENAI_API_KEY_HERE
+
+VARIABILE 3:
+Key: ALLOWED_ORIGINS
+Value: *
+
+## STEP 4: Deploy
+- Clicca "Create Web Service"
+- Aspetta 3-5 minuti
+- Copia l'URL finale che appare
+
+## STEP 5: Test
+Apri l'URL in un browser - dovresti vedere:
+{
+  "name": "ChefCode Backend API",
+  "version": "1.0.0",
+  "status": "running"
+}
+
+Poi dimmi l'URL e continuo con l'app mobile!

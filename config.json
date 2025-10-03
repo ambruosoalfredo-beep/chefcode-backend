@@ -1,0 +1,24 @@
+{
+  "deployment": {
+    "type": "render-cloud",
+    "url": "https://chefcode-backend-1.onrender.com",
+    "status": "deployed",
+    "environment": "production"
+  },
+  "api": {
+    "source": "environment-variables",
+    "location": "OPENAI_API_KEY environment variable on Render",
+    "configured": true
+  },
+  "security": {
+    "cors": "configured",
+    "env_vars": "secured_on_render",
+    "api_key": "environment_variable_only"
+  },
+  "instructions": {
+    "info": "✅ API key è configurata come variabile d'ambiente su Render",
+    "backend_url": "https://chefcode-backend-1.onrender.com",
+    "health_check": "https://chefcode-backend-1.onrender.com/health",
+    "note": "🔒 API key è sicura e non visibile nel codice"
+  }
+}
