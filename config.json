@@ -1,24 +1,9 @@
 {
-  "deployment": {
-    "type": "render-cloud",
-    "url": "https://chefcode-backend-1.onrender.com",
-    "status": "deployed",
-    "environment": "production"
-  },
-  "api": {
-    "source": "environment-variables",
-    "location": "OPENAI_API_KEY environment variable on Render",
-    "configured": true
-  },
-  "security": {
-    "cors": "configured",
-    "env_vars": "secured_on_render",
-    "api_key": "environment_variable_only"
-  },
+  "apiKey": "LA_TUA_API_KEY_QUI",
   "instructions": {
-    "info": "✅ API key è configurata come variabile d'ambiente su Render",
-    "backend_url": "https://chefcode-backend-1.onrender.com",
-    "health_check": "https://chefcode-backend-1.onrender.com/health",
-    "note": "🔒 API key è sicura e non visibile nel codice"
-  }
+    "step1": "Vai su https://platform.openai.com/api-keys",
+    "step2": "Crea un nuovo progetto e genera una API key",
+    "step3": "Sostituisci 'LA_TUA_API_KEY_QUI' con la tua vera API key"
+  },
+  "note": "⚠️ Non condividere mai la tua API key! È personale e a pagamento."
 }
