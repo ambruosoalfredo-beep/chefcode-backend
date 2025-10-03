@@ -8,10 +8,10 @@ const WebViewApp = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#2E4E6F" />
       
-      {/* WebView che carica la tua web app dai file assets */}
+      {/* WebView che carica la tua web app dal server locale */}
       <WebView
         style={styles.webview}
-        source={{ uri: 'file:///android_asset/index.html' }}
+        source={{ uri: 'http://localhost:3000' }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}

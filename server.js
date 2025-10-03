@@ -3,6 +3,9 @@ const fetch = require('node-fetch');
 const app = express();
 app.use(express.json());
 
+// Servi i file statici HTML/CSS/JS dalla cartella principale
+app.use(express.static('.'));
+
 // Aggiungi supporto CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
