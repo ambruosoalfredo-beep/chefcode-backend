@@ -1,0 +1,22 @@
+services:
+  # Backend API Server
+  - type: web
+    name: chefcode-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # IMPORTANTE: Aggiungi manualmente OPENAI_API_KEY nel dashboard Render
+      # Non includere mai API keys reali in questo file!
+
+  # Frontend Static Site (opzionale)
+  - type: static
+    name: chefcode-frontend
+    buildCommand: echo "Frontend ready"
+    publishPath: ./www
+    pullRequestPreviewsEnabled: false

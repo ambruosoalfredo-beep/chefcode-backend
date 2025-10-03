@@ -1,17 +1,31 @@
 {
-  "name": "chefcode-lavori-in-corso",
+  "name": "chefcode",
   "version": "1.0.0",
-  "main": "script.js",
+  "description": "**Piattaforma completa di gestione ristorante con intelligenza artificiale integrata**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ambruosoalfredo-beep/chefcode-backend.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "bugs": {
+    "url": "https://github.com/ambruosoalfredo-beep/chefcode-backend/issues"
+  },
+  "homepage": "https://github.com/ambruosoalfredo-beep/chefcode-backend#readme",
   "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
     "express": "^5.1.0",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^3.3.2",
+    "dotenv": "^16.3.1"
   }
 }

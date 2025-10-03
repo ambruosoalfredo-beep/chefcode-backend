@@ -8,6 +8,59 @@
 */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- INIT ChefCode API ---
+  // Forza l'uso del server Render sempre (sia APK che browser web)
+  const isAPK = window.location.protocol === 'file:';
+  const API_BASE_URL = 'https://chefcode-backend-1.onrender.com';
+  
+  // API semplificata hardcoded per evitare problemi di import
+  const chefCodeAPI = {
+    baseURL: API_BASE_URL,
+    async sendChatMessage(prompt) {
+      const response = await fetch(`${this.baseURL}/api/chatgpt-smart`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      return result;
+    },
+    async syncData(data) {
+      const response = await fetch(`${this.baseURL}/api/sync-data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    }
+  };
+
+  // Test di connessione al server all'avvio
+  async function testServerConnection() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`, { method: 'GET' });
+      
+      if (!response.ok) {
+        console.error('❌ [Test] Server health check failed:', response.status);
+      }
+    } catch (error) {
+      console.error('🚨 [Test] Connection test failed:', error.message);
+    }
+  }
+  
+  // Esegui test di connessione
+  testServerConnection();
+
   // --- ChatGPT LLM Chat ---
   const sendBtn = document.getElementById('send-btn');
   const uploadBtn = document.getElementById('upload-btn');
@@ -21,14 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!prompt) return;
     chatgptResponse.textContent = 'Loading...';
     try {
-      const res = await fetch('http://localhost:3000/api/chatgpt-smart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ prompt })
-      });
-      const data = await res.json();
+      // Usa l'API centralizzata invece della chiamata diretta
+      const data = await chefCodeAPI.sendChatMessage(prompt);
       if (data.choices && data.choices[0] && data.choices[0].message) {
         chatgptResponse.textContent = data.choices[0].message.content;
         
@@ -329,13 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sincronizza i dati con il server per permettere alla chat di accedervi
   async function syncWithServer() {
     try {
-      await fetch('http://localhost:3000/api/sync-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(STATE)
-      });
+      // Usa l'API centralizzata invece della chiamata diretta
+      await chefCodeAPI.syncData(STATE);
     } catch (err) {
       console.warn('Errore sincronizzazione server:', err);
     }

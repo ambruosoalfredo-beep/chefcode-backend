@@ -1,88 +1,32 @@
-// Load environment variables
 require('dotenv').config();
-
 const express = require('express');
 const fetch = require('node-fetch');
-const cors = require('cors');
 const app = express();
+app.use(express.json());
 
-// Configurazioni dalle variabili d'ambiente con valori di default
-const CONFIG = {
-  // Variabili obbligatorie
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: process.env.PORT || 3000,
-  
-  // CORS
-  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:19006,http://localhost:8081',
-  
-  // Sicurezza e performance
-  RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX) || 100,
-  OPENAI_TIMEOUT: parseInt(process.env.OPENAI_TIMEOUT) || 30000,
-  MAX_PAYLOAD_SIZE: parseInt(process.env.MAX_PAYLOAD_SIZE) || 10,
-  
-  // Logging
-  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-  ENABLE_DETAILED_LOGS: process.env.ENABLE_DETAILED_LOGS === 'true',
-  
-  // Cache
-  AI_CACHE_DURATION: parseInt(process.env.AI_CACHE_DURATION) || 300000,
-  APP_DATA_CACHE_DURATION: parseInt(process.env.APP_DATA_CACHE_DURATION) || 60000,
-  
-  // Monitoraggio
-  HEALTH_CHECK_INTERVAL: parseInt(process.env.HEALTH_CHECK_INTERVAL) || 30000,
-  EXTERNAL_TIMEOUT: parseInt(process.env.EXTERNAL_TIMEOUT) || 15000
-};
+// Aggiungi supporto CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
-// Configurazione CORS dinamica basata su environment
-const allowedOrigins = CONFIG.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Consenti richieste senza origin (app mobili native)
-    if (!origin) return callback(null, true);
-    
-    // Se ALLOWED_ORIGINS contiene *, consenti tutto
-    if (allowedOrigins.includes('*')) {
-      return callback(null, true);
-    }
-    
-    // Controlla se l'origin è nella lista consentita
-    if (allowedOrigins.includes(origin) || CONFIG.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      if (CONFIG.ENABLE_DETAILED_LOGS) {
-        console.log(`🚫 CORS blocked origin: ${origin}`);
-      }
-      callback(new Error('Non autorizzato da CORS policy'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-  credentials: true
-};
-
-app.use(cors(corsOptions));
-app.use(express.json({ limit: `${CONFIG.MAX_PAYLOAD_SIZE}mb` }));
-
-// Validazione variabili obbligatorie
-if (!CONFIG.OPENAI_API_KEY) {
-  console.error('❌ ERRORE: OPENAI_API_KEY non configurata nelle variabili d\'ambiente');
-  console.log('🔧 Configura la variabile OPENAI_API_KEY su Render o nel file .env');
-  console.log('📖 Usa il file COPY_ENV_TO_RENDER.bat per le istruzioni');
+// Verifica che l'API key sia configurata
+if (!OPENAI_API_KEY) {
+  console.error('❌ ERRORE: OPENAI_API_KEY non configurata!');
+  console.error('💡 Su Render: vai su Dashboard > Environment > aggiungi OPENAI_API_KEY');
+  console.error('💡 Localmente: crea file .env con OPENAI_API_KEY=la_tua_key');
   process.exit(1);
 }
 
-// Log configurazione in sviluppo
-if (CONFIG.NODE_ENV === 'development' || CONFIG.ENABLE_DETAILED_LOGS) {
-  console.log('🔧 ChefCode Backend Configuration:');
-  console.log(`   Environment: ${CONFIG.NODE_ENV}`);
-  console.log(`   Port: ${CONFIG.PORT}`);
-  console.log(`   CORS Origins: ${CONFIG.ALLOWED_ORIGINS}`);
-  console.log(`   Rate Limit: ${CONFIG.RATE_LIMIT_MAX} req/min`);
-  console.log(`   OpenAI Timeout: ${CONFIG.OPENAI_TIMEOUT}ms`);
-  console.log(`   Log Level: ${CONFIG.LOG_LEVEL}`);
-}
+console.log('✅ API Key OpenAI configurata correttamente');
 
 // Storage per i dati dell'applicazione (sincronizzato dal frontend)
 let appData = {
@@ -183,7 +127,7 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -383,7 +327,7 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -412,40 +356,4 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
   }
 });
 
-// Health check endpoint per Render
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'healthy', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// Endpoint per info API
-app.get('/', (req, res) => {
-  res.json({
-    name: 'ChefCode Backend API',
-    version: '1.0.0',
-    status: 'running',
-    endpoints: [
-      'GET /health - Health check',
-      'GET /api/data - Get app data',
-      'POST /api/sync-data - Sync app data',
-      'POST /api/action - Execute actions',
-      'POST /api/chatgpt-smart - Smart chat with AI'
-    ]
-  });
-});
-
-// Avvio server con configurazione ottimizzata
-app.listen(CONFIG.PORT, '0.0.0.0', () => {
-  console.log(`🚀 ChefCode Backend API running on port ${CONFIG.PORT}`);
-  console.log(`🌍 Environment: ${CONFIG.NODE_ENV}`);
-  console.log(`🔗 Health check: http://localhost:${CONFIG.PORT}/health`);
-  console.log(`⚡ CORS Origins: ${CONFIG.ALLOWED_ORIGINS}`);
-  console.log(`🤖 OpenAI API: ${CONFIG.OPENAI_API_KEY ? 'Configured ✅' : 'Missing ❌'}`);
-  
-  if (CONFIG.NODE_ENV === 'production') {
-    console.log('🎯 Production mode: Optimized for Render deployment');
-  }
-});
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));

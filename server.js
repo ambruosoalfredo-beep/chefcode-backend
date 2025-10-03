@@ -1,10 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
 app.use(express.json());
-
-// Servi i file statici HTML/CSS/JS dalla cartella principale
-app.use(express.static('.'));
 
 // Aggiungi supporto CORS
 app.use((req, res, next) => {
@@ -18,9 +16,17 @@ app.use((req, res, next) => {
   }
 });
 
-// NOTA: Questo file server.js è la versione web locale
-// Per produzione usa backend/server.js con variabili d'ambiente
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || 'YOUR_API_KEY_HERE';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+// Verifica che l'API key sia configurata
+if (!OPENAI_API_KEY) {
+  console.error('❌ ERRORE: OPENAI_API_KEY non configurata!');
+  console.error('💡 Su Render: vai su Dashboard > Environment > aggiungi OPENAI_API_KEY');
+  console.error('💡 Localmente: crea file .env con OPENAI_API_KEY=la_tua_key');
+  process.exit(1);
+}
+
+console.log('✅ API Key OpenAI configurata correttamente');
 
 // Storage per i dati dell'applicazione (sincronizzato dal frontend)
 let appData = {

@@ -1,0 +1,9 @@
+{
+  "apiKey": "LA_TUA_API_KEY_QUI",
+  "instructions": {
+    "step1": "Vai su https://platform.openai.com/api-keys",
+    "step2": "Crea un nuovo progetto e genera una API key",
+    "step3": "Sostituisci 'LA_TUA_API_KEY_QUI' con la tua vera API key"
+  },
+  "note": "⚠️ Non condividere mai la tua API key! È personale e a pagamento."
+}

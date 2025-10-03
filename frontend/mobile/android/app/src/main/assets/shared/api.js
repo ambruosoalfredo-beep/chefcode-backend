@@ -10,12 +10,16 @@ try {
   if (typeof require !== 'undefined') {
     config = require('./config.js').default;
   } else {
-    // Fallback per browser
-    config = { getApiUrl: () => 'http://localhost:3000' };
+    // Fallback intelligente: usa production per APK, development per browser localhost
+    const isAPK = typeof window !== 'undefined' && window.location.protocol === 'file:';
+    const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    config = { 
+      getApiUrl: () => isAPK ? 'https://chefcode-backend-1.onrender.com' : (isLocalhost ? 'http://localhost:3000' : 'https://chefcode-backend-1.onrender.com')
+    };
   }
 } catch (e) {
-  // Fallback se config non è disponibile
-  config = { getApiUrl: () => 'http://localhost:3000' };
+  // Fallback se config non è disponibile - usa sempre production
+  config = { getApiUrl: () => 'https://chefcode-backend-1.onrender.com' };
 }
 
 class ChefCodeAPI {
@@ -26,9 +30,11 @@ class ChefCodeAPI {
     this.retryAttempts = config?.mobile?.retryAttempts || 3;
     this.retryDelay = config?.mobile?.retryDelay || 1000;
     
-    if (config?.debug?.enableLogging) {
-      console.log('🌐 ChefCode API initialized with URL:', this.baseURL);
-    }
+    // Log sempre per debug APK
+    console.log('🌐 [ChefCodeAPI] Initialized with URL:', this.baseURL);
+    console.log('🌐 [ChefCodeAPI] Window location:', typeof window !== 'undefined' ? window.location.href : 'undefined');
+    console.log('🌐 [ChefCodeAPI] Protocol:', typeof window !== 'undefined' ? window.location.protocol : 'undefined');
+    console.log('🌐 [ChefCodeAPI] Config available:', !!config);
   }
 
   // Configurazione per mobile (React Native / Flutter)
@@ -105,17 +111,36 @@ class ChefCodeAPI {
   // ===== CHATGPT AI =====
   async sendChatMessage(prompt) {
     try {
+      console.log('🤖 [ChefCodeAPI] Sending ChatGPT request to:', `${this.baseURL}/api/chatgpt-smart`);
+      console.log('🤖 [ChefCodeAPI] Prompt:', prompt);
+      
+      const requestBody = JSON.stringify({ prompt });
+      console.log('🤖 [ChefCodeAPI] Request body:', requestBody);
+      
       const response = await fetch(`${this.baseURL}/api/chatgpt-smart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(this.token && { 'Authorization': `Bearer ${this.token}` })
         },
-        body: JSON.stringify({ prompt })
+        body: requestBody
       });
-      return await response.json();
+      
+      console.log('🤖 [ChefCodeAPI] Response status:', response.status);
+      console.log('🤖 [ChefCodeAPI] Response headers:', response.headers);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('🤖 [ChefCodeAPI] Response data:', result);
+      return result;
     } catch (error) {
-      console.error('Errore ChatGPT:', error);
+      console.error('🚨 [ChefCodeAPI] ChatGPT Error:', error);
+      console.error('🚨 [ChefCodeAPI] Error type:', error.constructor.name);
+      console.error('🚨 [ChefCodeAPI] Error message:', error.message);
+      console.error('🚨 [ChefCodeAPI] Error stack:', error.stack);
       throw error;
     }
   }

@@ -16,27 +16,9 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
 
-// Import WebView App per HTML nativo
-import WebViewApp from './WebViewApp';
-
 // Import ChefCode API (path relativo corretto)
-const ChefCodeAPI = require('./shared/api.js');
-const { storage, parser, validator, formatter, device } = require('./shared/utils.js');
-import BackendConfig from './BackendConfig.js';
-
-// Configurazione ottimizzata per produzione cloud
-const BACKEND_CONFIG = {
-  getUrl() {
-    return BackendConfig.getApiUrl();
-  },
-  
-  timeout: BackendConfig.timeout,
-  retryAttempts: BackendConfig.retryAttempts,
-  
-  log(message, data) {
-    BackendConfig.log(message, data);
-  }
-};
+const ChefCodeAPI = require('../../shared/api.js');
+const { storage, parser, validator, formatter, device } = require('../../shared/utils.js');
 
 export default function App() {
   const [inventory, setInventory] = useState([]);
@@ -46,60 +28,16 @@ export default function App() {
   const [refreshing, setRefreshing] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [chatResponse, setChatResponse] = useState('');
-  const [backendStatus, setBackendStatus] = useState('checking'); // checking, connected, error
-  
   const [isRecording, setIsRecording] = useState(false);
   const [serverConnected, setServerConnected] = useState(false);
   
-  // Stato per navigazione (replicando la webapp)
-  const [currentPage, setCurrentPage] = useState('step-selection'); // step-selection, goods-in, recipe-setup, production, etc.
-  
-  // Inizializza API con configurazione dinamica per produzione/development
-  const api = new ChefCodeAPI(BACKEND_CONFIG.getUrl());
+  // Initialize API - IMPORTANTE: Cambia questo IP con il tuo IP locale della rete
+  const [serverIP, setServerIP] = useState('192.168.1.100'); // ⚠️ CAMBIA QUESTO
+  const api = new ChefCodeAPI(`http://${serverIP}:3000`);
   
   useEffect(() => {
-    initializeApp();
+    loadData();
   }, []);
-
-  const initializeApp = async () => {
-    // Test connessione backend con retry per Render
-    BACKEND_CONFIG.log('🚀 ChefCode Mobile starting...');
-    BACKEND_CONFIG.log('🌐 Backend URL:', BACKEND_CONFIG.getUrl());
-    BACKEND_CONFIG.log('☁️ Backend Type: Render Cloud');
-    
-    setBackendStatus('checking');
-    
-    // Retry logic per Render (può essere lento al primo avvio)
-    let connectionSuccess = false;
-    for (let attempt = 1; attempt <= BACKEND_CONFIG.retryAttempts; attempt++) {
-      BACKEND_CONFIG.log(`🔄 Connection attempt ${attempt}/${BACKEND_CONFIG.retryAttempts}`);
-      
-      const connectionTest = await api.testConnection();
-      
-      if (connectionTest.success) {
-        connectionSuccess = true;
-        setBackendStatus('connected');
-        setServerConnected(true);
-        BACKEND_CONFIG.log('✅ Backend connected successfully');
-        break;
-      } else {
-        BACKEND_CONFIG.log(`❌ Attempt ${attempt} failed:`, connectionTest.error);
-        if (attempt < BACKEND_CONFIG.retryAttempts) {
-          BACKEND_CONFIG.log(`⏳ Waiting ${BACKEND_CONFIG.retryDelay}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, BACKEND_CONFIG.retryDelay));
-        }
-      }
-    }
-    
-    if (!connectionSuccess) {
-      setBackendStatus('error');
-      setServerConnected(false);
-      BACKEND_CONFIG.log('💾 Using local data as fallback');
-    }
-    
-    // Carica dati sempre (locali se backend non disponibile)
-    await loadData();
-  };
   
   const loadData = async (showLoader = true) => {
     if (showLoader) setLoading(true);
@@ -267,270 +205,113 @@ export default function App() {
     );
   };
   
-  // Render pagina principale (step selection)
-  const renderStepSelection = () => (
-    <View style={styles.pageContainer}>
-      <Text style={styles.pageTitle}>ChefCode</Text>
-      <View style={styles.stepGrid}>
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('goods-in')}
-        >
-          <Text style={styles.stepIcon}>📦</Text>
-          <Text style={styles.stepText}>GOODS IN</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('recipe-setup')}
-        >
-          <Text style={styles.stepIcon}>🍽️</Text>
-          <Text style={styles.stepText}>RECIPE SET-UP</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('production')}
-        >
-          <Text style={styles.stepIcon}>🏭</Text>
-          <Text style={styles.stepText}>PRODUCTION</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('sales')}
-        >
-          <Text style={styles.stepIcon}>💰</Text>
-          <Text style={styles.stepText}>SALES</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('shopping-list')}
-        >
-          <Text style={styles.stepIcon}>🛒</Text>
-          <Text style={styles.stepText}>SHOPPING LIST</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('dashboard')}
-        >
-          <Text style={styles.stepIcon}>📊</Text>
-          <Text style={styles.stepText}>DASHBOARD</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('inventory')}
-        >
-          <Text style={styles.stepIcon}>📋</Text>
-          <Text style={styles.stepText}>INVENTORY</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('chat-ai')}
-        >
-          <Text style={styles.stepIcon}>🤖</Text>
-          <Text style={styles.stepText}>CHAT AI</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  // Render pagina Goods In
-  const renderGoodsIn = () => (
-    <View style={styles.pageContainer}>
-      <View style={styles.headerWithBack}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => setCurrentPage('step-selection')}
-        >
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTitle}>GOODS IN</Text>
-      </View>
-      
-      <View style={styles.stepGrid}>
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => Alert.alert('Feature', 'Invoice Photo OCR coming soon!')}
-        >
-          <Text style={styles.stepIcon}>📷</Text>
-          <Text style={styles.stepText}>INVOICE PHOTO (OCR)</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('manual-input')}
-        >
-          <Text style={styles.stepIcon}>⌨️</Text>
-          <Text style={styles.stepText}>MANUAL INPUT</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.bigStepButton} 
-          onPress={() => setCurrentPage('voice-input')}
-        >
-          <Text style={styles.stepIcon}>🎤</Text>
-          <Text style={styles.stepText}>VOICE INPUT</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  // Render altre pagine
-  const renderManualInput = () => (
-    <View style={styles.pageContainer}>
-      <View style={styles.headerWithBack}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => setCurrentPage('goods-in')}
-        >
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTitle}>MANUAL INPUT</Text>
-      </View>
-      
-      <View style={styles.formContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Nome prodotto"
-          value=""
-          onChangeText={() => {}}
-        />
-        <TouchableOpacity style={styles.submitButton} onPress={addInventoryItem}>
-          <Text style={styles.buttonText}>+ Aggiungi all'inventario</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  const renderInventory = () => (
-    <View style={styles.pageContainer}>
-      <View style={styles.headerWithBack}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => setCurrentPage('step-selection')}
-        >
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTitle}>INVENTORY ({inventory.length})</Text>
-      </View>
-      
-      <View style={styles.listContainer}>
-        {inventory.map((item, index) => (
-          <View key={index} style={styles.listItem}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            <Text style={styles.itemDetails}>
-              {item.quantity} {item.unit} • €{item.price}
-            </Text>
-          </View>
-        ))}
-        
-        {inventory.length === 0 && (
-          <Text style={styles.emptyText}>Nessun ingrediente nell'inventario</Text>
-        )}
-      </View>
-    </View>
-  );
-
-  const renderChatAI = () => (
-    <View style={styles.pageContainer}>
-      <View style={styles.headerWithBack}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => setCurrentPage('step-selection')}
-        >
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTitle}>CHAT AI</Text>
-      </View>
-      
-      <View style={styles.chatContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Scrivi un comando... (es: aggiungi 2 kg pasta)"
-          value={chatMessage}
-          onChangeText={setChatMessage}
-          multiline
-        />
-        <View style={styles.buttonRow}>
-          <TouchableOpacity 
-            style={[styles.voiceButton, { backgroundColor: isRecording ? '#e74c3c' : '#9b59b6' }]} 
-            onPress={startVoiceRecording}
-            disabled={isRecording}
-          >
-            <Text style={styles.buttonText}>
-              {isRecording ? '🎙️' : '🎤'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.sendButton, { opacity: (loading || !chatMessage.trim()) ? 0.5 : 1 }]} 
-            onPress={sendChatMessage}
-            disabled={loading || !chatMessage.trim()}
-          >
-            <Text style={styles.buttonText}>✈️</Text>
-          </TouchableOpacity>
-        </View>
-        
-        {chatResponse ? (
-          <View style={styles.responseContainer}>
-            <Text style={styles.responseText}>{chatResponse}</Text>
-          </View>
-        ) : null}
-      </View>
-    </View>
-  );
-
-  const renderDashboard = () => (
-    <View style={styles.pageContainer}>
-      <View style={styles.headerWithBack}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => setCurrentPage('step-selection')}
-        >
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.pageTitle}>DASHBOARD</Text>
-      </View>
-      
-      <View style={styles.dashboardContainer}>
-        <Text style={styles.dashboardText}>Dashboard features coming soon!</Text>
-      </View>
-    </View>
-  );
-
-  // App apre direttamente con WebView HTML nativo
-  return <WebViewApp />;
-
-  // Questo codice non viene mai eseguito perché l'app usa direttamente WebView
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <StatusBar style="auto" />
         
-        {/* Status Header */}
-        <View style={styles.statusHeader}>
-          <Text style={styles.statusText}>
-            {backendStatus === 'connected' ? '🟢 Cloud Connected' : 
-             backendStatus === 'checking' ? '🟡 Connecting...' : '🔴 Offline Mode'}
-          </Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>🍳 ChefCode Mobile</Text>
+            <Text style={styles.subtitle}>
+              {serverConnected ? '🟢 Server connesso' : '🔴 Modalità offline'}
+            </Text>
+          </View>
+          <TouchableOpacity 
+            style={[styles.reloadButton, { opacity: loading ? 0.5 : 1 }]} 
+            onPress={() => loadData(true)}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Text style={styles.buttonText}>🔄</Text>
+            )}
+          </TouchableOpacity>
         </View>
         
-        {/* Navigazione condizionale basata su currentPage */}
         <ScrollView 
           style={styles.content}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={() => loadData(false)} />
           }
         >
-          {currentPage === 'step-selection' && renderStepSelection()}
-          {currentPage === 'goods-in' && renderGoodsIn()}
-          {currentPage === 'manual-input' && renderManualInput()}
-          {currentPage === 'inventory' && renderInventory()}
-          {currentPage === 'chat-ai' && renderChatAI()}
+          {/* Chat AI Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🤖 Chat AI</Text>
+            <View style={styles.chatContainer}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Scrivi un comando... (es: aggiungi 2 kg pasta)"
+                value={chatMessage}
+                onChangeText={setChatMessage}
+                multiline
+              />
+              <TouchableOpacity 
+                style={[styles.voiceButton, { backgroundColor: isRecording ? '#e74c3c' : '#9b59b6' }]} 
+                onPress={startVoiceRecording}
+                disabled={isRecording}
+              >
+                <Text style={styles.buttonText}>
+                  {isRecording ? '🎙️' : '🎤'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.sendButton, { opacity: (loading || !chatMessage.trim()) ? 0.5 : 1 }]} 
+                onPress={sendChatMessage}
+                disabled={loading || !chatMessage.trim()}
+              >
+                <Text style={styles.buttonText}>✈️</Text>
+              </TouchableOpacity>
+            </View>
+            {chatResponse ? (
+              <View style={styles.responseContainer}>
+                <Text style={styles.responseText}>{chatResponse}</Text>
+              </View>
+            ) : null}
+          </View>
+          
+          {/* Inventory Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>📦 Inventario ({inventory.length})</Text>
+              <TouchableOpacity style={styles.addButton} onPress={addInventoryItem}>
+                <Text style={styles.buttonText}>+ Aggiungi</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {inventory.map((item, index) => (
+              <View key={index} style={styles.inventoryItem}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemDetails}>
+                  {formatter.quantity(item.quantity, item.unit)} • {formatter.currency(item.price)}
+                </Text>
+                <Text style={styles.itemCategory}>{item.category}</Text>
+              </View>
+            ))}
+            
+            {inventory.length === 0 && (
+              <Text style={styles.emptyText}>Nessun ingrediente nell'inventario</Text>
+            )}
+          </View>
+          
+          {/* Recipes Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📝 Ricette ({Object.keys(recipes).length})</Text>
+            {Object.keys(recipes).map((recipeName) => (
+              <View key={recipeName} style={styles.recipeItem}>
+                <Text style={styles.recipeName}>{recipeName}</Text>
+                <Text style={styles.recipeIngredients}>
+                  {recipes[recipeName].items?.length || 0} ingredienti
+                </Text>
+              </View>
+            ))}
+            
+            {Object.keys(recipes).length === 0 && (
+              <Text style={styles.emptyText}>Nessuna ricetta configurata</Text>
+            )}
+          </View>
         </ScrollView>
         
         {loading && (
@@ -548,163 +329,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  
-  // Toggle Container
-  toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#34495e',
-    margin: 10,
-    borderRadius: 25,
-    padding: 2,
-  },
-  toggleBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 22,
-    alignItems: 'center',
-  },
-  activeToggle: {
-    backgroundColor: '#3498db',
-  },
-  toggleText: {
-    color: '#ecf0f1',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  activeToggleText: {
-    color: 'white',
-  },
-  
-  // Status Header
-  statusHeader: {
-    backgroundColor: '#2c3e50',
-    padding: 8,
-    alignItems: 'center',
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  
-  // Page Container
-  pageContainer: {
-    flex: 1,
-    padding: 20,
-  },
-  pageTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  
-  // Header with Back Button
-  headerWithBack: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButton: {
-    marginRight: 15,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#3498db',
-    fontWeight: '500',
-  },
-  
-  // Step Grid
-  stepGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  bigStepButton: {
-    width: '48%',
-    aspectRatio: 1,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  stepIcon: {
-    fontSize: 40,
-    marginBottom: 10,
-  },
-  stepText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    textAlign: 'center',
-  },
-  
-  // Form Container
-  formContainer: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-  },
-  
-  // List Container
-  listContainer: {
-    flex: 1,
-  },
-  listItem: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  itemDetails: {
-    fontSize: 14,
-    color: '#7f8c8d',
-    marginTop: 4,
-  },
-  
-  // Chat Container
-  chatContainer: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  
-  // Dashboard
-  dashboardContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dashboardText: {
-    fontSize: 18,
-    color: '#7f8c8d',
-  },
-  
-  // Old styles (to maintain compatibility)
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

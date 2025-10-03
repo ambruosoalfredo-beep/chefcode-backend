@@ -4,20 +4,25 @@
  */
 
 // Rileva se è ambiente development o production
+// Per APK/mobile usa sempre production, per web browser usa development se localhost
 const isDevelopment = typeof window !== 'undefined' 
-  ? window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? (window.location.protocol === 'file:' ? false : window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   : process.env.NODE_ENV === 'development';
 
 const config = {
   // Backend API URLs
   api: {
-    // Sostituisci YOUR_RENDER_URL con il tuo URL di Render quando lo ottieni
-    production: 'https://your-chefcode-backend.onrender.com',
+    // URL del server Render deployato
+    production: 'https://chefcode-backend-1.onrender.com',
     development: 'http://localhost:3000'
   },
   
   // Ottieni l'URL corretto basato sull'ambiente
   getApiUrl() {
+    // Per APK/Capacitor usa sempre production
+    if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+      return this.api.production;
+    }
     return isDevelopment ? this.api.development : this.api.production;
   },
   

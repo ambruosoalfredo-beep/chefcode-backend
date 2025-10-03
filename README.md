@@ -1,13 +1,22 @@
-# �️ ChefCode - Smart Kitchen Management App
+# 🍳 ChefCode - Restaurant Management Platform# 🍽️ ChefCode - Restaurant Management Platform
 
-**Piattaforma completa di gestione ristorante con intelligenza artificiale integrata**
 
-## ✨ Caratteristiche principali
 
-### 🏪 Gestione Completa
-- **Goods In**: Gestione inventario con scanner OCR e input vocale
-- **Recipe Set-Up**: Configurazione ricette e calcolo costi  
-- **Production**: Pianificazione produzione giornaliera
+## 📁 Struttura Progetto**Piattaforma completa di gestione ristorante con intelligenza artificiale integrata**
+
+
+
+```## ✨ Caratteristiche principali
+
+CHEFCODE LAVORI IN CORSO/
+
+├── 📁 backend/              # Server Node.js + API### 🏪 Gestione Completa
+
+│   ├── server.js           # Server Express con AI integrata- **Goods In**: Gestione inventario con scanner OCR e input vocale
+
+│   ├── package.json        # Dipendenze Node.js- **Recipe Set-Up**: Configurazione ricette e calcolo costi
+
+│   ├── config.json         # Configurazione OpenAI- **Production**: Pianificazione produzione giornaliera
 
 │   └── start.bat          # Script avvio server- **Sales**: Gestione vendite e reportistica
 
@@ -73,21 +82,31 @@ double-click start.bat### 3️⃣ Configurazione API OpenAI
 
 **⚠️ IMPORTANTE**: Prima di usare l'AI devi configurare la tua API key.
 
-### 2️⃣ Avvia Frontend Web
+### 2️⃣ Configurazione API OpenAI
 
-```bash1. Vai su [OpenAI Platform](https://platform.openai.com/api-keys)
+#### 📍 **Setup Locale**
+1. Vai su [OpenAI Platform](https://platform.openai.com/api-keys)
+2. Crea una nuova API key
+3. Copia il file `.env.example` in `.env` nella cartella `backend/`
+4. Sostituisci `your_openai_api_key_here` con la tua API key reale
 
-cd frontend/web2. Crea una nuova API key
+#### 🚀 **Setup su Render (Deploy)**
+1. Vai nel tuo dashboard Render
+2. Seleziona il tuo servizio ChefCode
+3. Vai su **Environment**
+4. Aggiungi nuova variabile:
+   - **Key**: `OPENAI_API_KEY`
+   - **Value**: `la_tua_api_key_openai`
+5. Fai **Deploy** per applicare le modifiche
 
-open index.html nel browser3. Apri il file `server.js`
+### 3️⃣ Avvia Frontend Web
 
-```4. Sostituisci la riga 17:
+```bash
+cd www
+python -m http.server 8080
+```
 
-```javascript
-
-### 3️⃣ App Mobile (React Native)const OPENAI_API_KEY = 'LA_TUA_API_KEY_QUI';
-
-```bash```
+### 3️⃣ App Mobile (React Native)
 
 cd frontend/mobile
 
