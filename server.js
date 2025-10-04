@@ -18,6 +18,16 @@ app.use((req, res, next) => {
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+// Verifica che l'API key sia configurata
+if (!OPENAI_API_KEY) {
+  console.error('❌ ERRORE: OPENAI_API_KEY non configurata!');
+  console.error('💡 Su Render: vai su Dashboard > Environment > aggiungi OPENAI_API_KEY');
+  console.error('💡 Localmente: crea file .env con OPENAI_API_KEY=la_tua_key');
+  process.exit(1);
+}
+
+console.log('✅ API Key OpenAI configurata correttamente');
+
 // Storage per i dati dell'applicazione (sincronizzato dal frontend)
 let appData = {
   inventory: [],
@@ -346,4 +356,5 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
   }
 });
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
