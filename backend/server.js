@@ -157,6 +157,7 @@ CAPACITÀ:
 Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione professionale.`;
 
   try {
+    console.log('🤖 Invio richiesta a OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -169,22 +170,29 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
-        max_tokens: 250
+        max_tokens: 500,
+        temperature: 0.7
       })
     });
     
-    const data = await response.json();
-    
-    if (data.error) {
-      console.log('Errore OpenAI:', data.error);
-      res.status(400).json({ error: data.error.message });
-      return;
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ Errore OpenAI API:', errorData);
+      return res.status(response.status).json({ 
+        error: errorData.error?.message || 'Errore API OpenAI' 
+      });
     }
+    
+    const data = await response.json();
+    console.log('✅ Risposta OpenAI ricevuta');
     
     res.json(data);
   } catch (err) {
-    console.log('Errore nella richiesta:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('❌ Errore richiesta:', err.message);
+    res.status(500).json({ 
+      error: 'Errore interno del server: ' + err.message,
+      details: 'Controlla che l\'API key OpenAI sia configurata correttamente'
+    });
   }
 });
 
@@ -387,6 +395,58 @@ Rispondi sempre in italiano, sii pratico e utile per un ambiente di ristorazione
   } catch (err) {
     console.log('Errore nella richiesta:', err.message);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Endpoint ChatGPT standard (come ChefCode 2.0)
+app.post('/api/chatgpt', async (req, res) => {
+  const { prompt } = req.body;
+  
+  console.log('🤖 ChatGPT Standard - Prompt ricevuto:', prompt);
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'Prompt richiesto' });
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'Sei un assistente culinario esperto per ChefCode. Rispondi sempre in italiano in modo pratico e utile per la gestione di un ristorante.' 
+          },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('❌ Errore OpenAI:', errorData);
+      return res.status(response.status).json({ 
+        error: errorData.error?.message || 'Errore API OpenAI' 
+      });
+    }
+
+    const data = await response.json();
+    console.log('✅ Risposta ChatGPT standard inviata');
+    
+    res.json(data);
+  } catch (err) {
+    console.error('❌ Errore ChatGPT:', err.message);
+    res.status(500).json({ 
+      error: 'Errore interno: ' + err.message,
+      details: 'Controlla configurazione API OpenAI'
+    });
   }
 });
 

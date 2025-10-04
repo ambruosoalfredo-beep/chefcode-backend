@@ -18,22 +18,64 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatgptInput = document.getElementById('chatgpt-input');
   const chatgptResponse = document.getElementById('chatgpt-response');
 
-  // Funzione per inviare messaggio ChatGPT
+  // Funzione per inviare messaggio ChatGPT (con fallback come ChefCode 2.0)
   const sendChatGPTMessage = async () => {
     const prompt = chatgptInput.value.trim();
     if (!prompt) return;
-    chatgptResponse.textContent = 'Loading...';
+    chatgptResponse.textContent = '🤖 Loading...';
+    
     try {
-      const res = await fetch(`${API_BASE_URL}/api/chatgpt-smart`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ prompt })
-      });
-      const data = await res.json();
-      if (data.choices && data.choices[0] && data.choices[0].message) {
+      console.log('🚀 Invio prompt a Render:', API_BASE_URL);
+      
+      let data = null;
+      let success = false;
+      
+      // Prima prova con chatgpt-smart (endpoint principale)
+      try {
+        console.log('📡 Tentativo 1: /api/chatgpt-smart');
+        const res = await fetch(`${API_BASE_URL}/api/chatgpt-smart`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt })
+        });
+        
+        if (res.ok) {
+          data = await res.json();
+          success = true;
+          console.log('✅ Successo con chatgpt-smart');
+        }
+      } catch (smartError) {
+        console.log('⚠️ Errore chatgpt-smart:', smartError.message);
+      }
+      
+      // Se il primo fallisce, prova con l'endpoint standard
+      if (!success) {
+        try {
+          console.log('📡 Tentativo 2: /api/chatgpt');
+          const res = await fetch(`${API_BASE_URL}/api/chatgpt`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt })
+          });
+          
+          if (res.ok) {
+            data = await res.json();
+            success = true;
+            console.log('✅ Successo con chatgpt standard');
+          }
+        } catch (stdError) {
+          console.log('⚠️ Errore chatgpt standard:', stdError.message);
+        }
+      }
+      
+      // Processa la risposta se abbiamo successo
+      if (success && data && data.choices && data.choices[0] && data.choices[0].message) {
         chatgptResponse.textContent = data.choices[0].message.content;
+        console.log('🎉 Risposta AI ricevuta:', data.choices[0].message.content.substring(0, 50) + '...');
         
         // Mostra l'overlay della chat
         const aiChatOverlay = document.getElementById('ai-chat-overlay');
@@ -71,7 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
           chatgptResponse.textContent = '';
         }, 8000);
       } else {
-        chatgptResponse.textContent = 'No response.';
+        // Nessuna risposta valida dai server
+        const errorMsg = data && data.error ? data.error : 'Nessuna risposta dal server AI';
+        chatgptResponse.textContent = `❌ Errore: ${errorMsg}`;
+        console.error('❌ Errore AI:', errorMsg);
+        
         const aiChatOverlay = document.getElementById('ai-chat-overlay');
         if (aiChatOverlay) {
           aiChatOverlay.style.display = 'block';
@@ -85,12 +131,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
       }
     } catch (err) {
-      chatgptResponse.textContent = 'Error: ' + err.message;
+      console.error('💥 Errore generale AI:', err);
+      chatgptResponse.textContent = `💥 Errore connessione: ${err.message}. Verifica che Render sia attivo.`;
+      
       const aiChatOverlay = document.getElementById('ai-chat-overlay');
       if (aiChatOverlay) {
         aiChatOverlay.style.display = 'block';
       }
-      // Cancella anche i messaggi di errore dopo 5 secondi
+      // Cancella anche i messaggi di errore dopo 10 secondi
       setTimeout(() => {
         if (aiChatOverlay) {
           aiChatOverlay.style.display = 'none';
