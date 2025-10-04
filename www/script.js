@@ -7,7 +7,7 @@
    PATCH 1.2.2 — Stable (Inventory deduction + Production fix)
 */
 
-// Configurazione API URL - USA SEMPRE RENDER per evitare errori fetch
+// Configurazione API URL - RENDER ENDPOINT
 const API_BASE_URL = 'https://chefcode-backend-bfp9.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
