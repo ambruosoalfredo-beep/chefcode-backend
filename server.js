@@ -2,13 +2,32 @@ require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
-app.use(express.json());
 
-// Aggiungi supporto CORS
+// Middleware di base
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Configurazione CORS migliorata per produzione
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const allowedOrigins = [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+    'https://ambruosoalfredo-beep.github.io',
+    'https://chefcode-app.netlify.app',
+    'https://chefcode-frontend.onrender.com'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    res.header('Access-Control-Allow-Origin', '*'); // Fallback per sviluppo
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -27,6 +46,21 @@ if (!OPENAI_API_KEY) {
 }
 
 console.log('✅ API Key OpenAI configurata correttamente');
+
+// Health check endpoint per Render
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'ChefCode Backend',
+    version: '2.0.0',
+    timestamp: new Date().toISOString(),
+    ai_ready: !!OPENAI_API_KEY
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', uptime: process.uptime() });
+});
 
 // Storage per i dati dell'applicazione (sincronizzato dal frontend)
 let appData = {
