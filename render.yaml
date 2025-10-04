@@ -2,10 +2,11 @@ services:
   # Backend API Server
   - type: web
     name: chefcode-backend
-    env: node
+    runtime: node
     plan: free
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && node server.js
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production

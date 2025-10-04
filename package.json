@@ -2,12 +2,20 @@
   "name": "chefcode",
   "version": "1.0.0",
   "description": "**Piattaforma completa di gestione ristorante con intelligenza artificiale integrata**",
-  "main": "index.js",
+  "main": "backend/server.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "cd backend && node server.js",
+    "postinstall": "cd backend && npm install",
+    "build": "echo 'ChefCode build complete'",
+    "dev": "cd backend && node server.js",
+    "test": "echo \"No tests specified\""
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
   "repository": {
     "type": "git",
