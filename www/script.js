@@ -606,73 +606,74 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
       const pid  = findPageIdForStep(step || '');
       if (pid) showPage(pid);
       else showPage('step-selection-page');
-     /* ==== PATCH LAYOUT-4x2 — pulizia stili inline sul Back (append-only) ==== */
-(function enforceHomeGridOnBack(){
-  const home = document.getElementById('step-selection-page');
-  if (!home) return;
-  const grid = home.querySelector('.step-buttons-grid');
-  if (!grid) return;
-
-  function cleanInline() {
-    // rimuove qualsiasi style inline che possa stringere i riquadri
-    grid.removeAttribute('style');
-    if (grid.style) {
-      grid.style.gridTemplateColumns = '';
-      grid.style.gridTemplateRows = '';
-      grid.style.gap = '';
-    }
-  }
-
-  // Dopo qualunque click su un back-button, quando la home è visibile ripulisci
-  document.addEventListener('click', (e) => {
-    const back = e.target.closest('.back-button');
-    if (!back) return;
-    const targetId = back.dataset.backTarget || '';
-    setTimeout(() => {
-      if (targetId === 'step-selection-page' || home.classList.contains('active')) {
-        cleanInline(); // il CSS sopra fa il resto (4x2 responsive)
-      }
-    }, 0);
-  }, true);
-
-  // Safety net: se la home diventa active per altri motivi
-  const mo = new MutationObserver(() => {
-    if (home.classList.contains('active')) cleanInline();
-  });
-  mo.observe(home, { attributes: true, attributeFilter: ['class'] });
-})();
- /* === PATCH 1.1.6 — Forza il centro della dashboard al ritorno (append-only) === */
-(function centerHomeGridOnActivate(){
-  const home = document.getElementById('step-selection-page');
-  const grid = home ? home.querySelector('.step-buttons-grid') : null;
-  if (!home || !grid) return;
-
-  function centerNow(){
-    // nessuna misura fissa: centratura a contenuto (resta responsive)
-    grid.style.width = 'fit-content';
-    grid.style.marginLeft = 'auto';
-    grid.style.marginRight = 'auto';
-    grid.style.justifyContent = 'center';
-  }
-
-  // Quando premi "Back" e torni alla home, centra
-  document.addEventListener('click', (e) => {
-    const back = e.target.closest('.back-button');
-    if (!back) return;
-    setTimeout(() => {
-      if (home.classList.contains('active')) centerNow();
-    }, 0);
-  }, true);
-
-  // Safety net: qualsiasi volta la home diventa active, centra
-  const mo = new MutationObserver(() => {
-    if (home.classList.contains('active')) centerNow();
-  });
-  mo.observe(home, { attributes: true, attributeFilter: ['class'] });
-})();
-
     });
   });
+
+  // ==== PATCH LAYOUT-4x2 — pulizia stili inline sul Back (append-only) ====
+  (function enforceHomeGridOnBack(){
+    const home = document.getElementById('step-selection-page');
+    if (!home) return;
+    const grid = home.querySelector('.step-buttons-grid');
+    if (!grid) return;
+
+    function cleanInline() {
+      // rimuove qualsiasi style inline che possa stringere i riquadri
+      grid.removeAttribute('style');
+      if (grid.style) {
+        grid.style.gridTemplateColumns = '';
+        grid.style.gridTemplateRows = '';
+        grid.style.gap = '';
+      }
+    }
+
+    // Dopo qualunque click su un back-button, quando la home è visibile ripulisci
+    document.addEventListener('click', (e) => {
+      const back = e.target.closest('.back-button');
+      if (!back) return;
+      const targetId = back.dataset.backTarget || '';
+      setTimeout(() => {
+        if (targetId === 'step-selection-page' || home.classList.contains('active')) {
+          cleanInline(); // il CSS sopra fa il resto (4x2 responsive)
+        }
+      }, 0);
+    }, true);
+
+    // Safety net: se la home diventa active per altri motivi
+    const mo = new MutationObserver(() => {
+      if (home.classList.contains('active')) cleanInline();
+    });
+    mo.observe(home, { attributes: true, attributeFilter: ['class'] });
+  })();
+
+  // === PATCH 1.1.6 — Forza il centro della dashboard al ritorno (append-only) ===
+  (function centerHomeGridOnActivate(){
+    const home = document.getElementById('step-selection-page');
+    const grid = home ? home.querySelector('.step-buttons-grid') : null;
+    if (!home || !grid) return;
+
+    function centerNow(){
+      // nessuna misura fissa: centratura a contenuto (resta responsive)
+      grid.style.width = 'fit-content';
+      grid.style.marginLeft = 'auto';
+      grid.style.marginRight = 'auto';
+      grid.style.justifyContent = 'center';
+    }
+
+    // Quando premi "Back" e torni alla home, centra
+    document.addEventListener('click', (e) => {
+      const back = e.target.closest('.back-button');
+      if (!back) return;
+      setTimeout(() => {
+        if (home.classList.contains('active')) centerNow();
+      }, 0);
+    }, true);
+
+    // Safety net: qualsiasi volta la home diventa active, centra
+    const mo = new MutationObserver(() => {
+      if (home.classList.contains('active')) centerNow();
+    });
+    mo.observe(home, { attributes: true, attributeFilter: ['class'] });
+  })();
 
   if (chefcodeLogoBtn){
     chefcodeLogoBtn.addEventListener('click', () => showPage('step-selection-page'));
@@ -726,8 +727,6 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
     console.error('❌ goods-in-content NON trovato!');
   }
 
-}); // End DOMContentLoaded
-
 // 2) Back: quando torni alla dashboard, forziamo la griglia 2×4 come all’inizio
 (function fixBackGrid(){
   // intercettiamo TUTTI i back-button già presenti in pagina
@@ -746,9 +745,6 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
     }, 0);
   }, true);
 })();
-
-    });
-  }
 
   // ---------- Camera/OCR (sim) ----------
   function renderCameraIdle(){
