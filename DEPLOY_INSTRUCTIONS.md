@@ -32,15 +32,15 @@ Ma devi configurare solo una volta:
 ### 3. Test Produzione
 
 Una volta deployato, testa:
-- Backend: https://chefcode-backend-bfp9.onrender.com
-- AI Endpoint: https://chefcode-backend-bfp9.onrender.com/api/chatgpt-smart
+- Backend: https://chefcode-backend-1.onrender.com
+- AI Endpoint: https://chefcode-backend-1.onrender.com/api/chatgpt-smart
 
 ## 🔧 Configurazione Attuale
 
 **Frontend** (`www/script.js`):
 - ✅ Auto-detect locale vs produzione
 - ✅ Locale: `http://localhost:3000`
-- ✅ Produzione: `https://chefcode-backend-bfp9.onrender.com`
+- ✅ Produzione: `https://chefcode-backend-1.onrender.com`
 
 **Backend** (`backend/server.js`):
 - ✅ CORS configurato per GitHub Pages/Render
