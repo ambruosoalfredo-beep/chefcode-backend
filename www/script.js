@@ -572,13 +572,28 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
   }
 
   function showPage(pageId){
-    if (!stepSelectionPage || !inputDetailPage || !inputPagesContainer) return;
+    console.log('📄 showPage chiamata con:', pageId);
+    
+    if (!stepSelectionPage || !inputDetailPage || !inputPagesContainer) {
+      console.error('❌ Elementi base mancanti:', { stepSelectionPage, inputDetailPage, inputPagesContainer });
+      return;
+    }
+    
     qa('.input-page').forEach(p => p.classList.remove('active'));
     stepSelectionPage.classList.remove('active');
     inputDetailPage.classList.remove('active');
+    
     const target = el(pageId);
-    if (target){ target.classList.add('active'); inputDetailPage.classList.add('active'); }
-    else { stepSelectionPage.classList.add('active'); }
+    console.log('🎯 Target element:', target);
+    
+    if (target){ 
+      target.classList.add('active'); 
+      inputDetailPage.classList.add('active');
+      console.log('✅ Pagina attivata:', pageId);
+    } else { 
+      stepSelectionPage.classList.add('active');
+      console.log('⚠️ Target non trovato, torno alla home');
+    }
     // Mostra i tab solo se sei nella pagina production
     prodPanels.forEach(el => {
       el.style.display = (pageId === 'production-content') ? '' : 'none';
@@ -695,9 +710,14 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
       'manual-input' : 'manual-input-content'
     };
     const targetId = map[action];
+    console.log('🔍 Click su:', action, '→ Target ID:', targetId);
+    
     if (targetId && typeof showPage === 'function') {
       e.preventDefault();
+      console.log('✅ Calling showPage con:', targetId);
       showPage(targetId);
+    } else {
+      console.error('❌ Problema navigazione:', { targetId, showPageExists: typeof showPage === 'function' });
     }
   }, true);
 })();
