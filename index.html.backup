@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChefCode - Workflow Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+<style>
+    /* Stili per i pulsanti del footer ChatGPT */
+    #voice-footer #send-btn,
+    #voice-footer #upload-btn,
+    #voice-footer #voice-chat-btn {
+        background: linear-gradient(145deg, #ffffff, #e8e8e8) !important;
+        border: 2px solid #ffffff !important;
+        color: #2c3e50 !important;
+        border-radius: 50% !important;
+        width: 45px !important;
+        height: 45px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+    }
+    
+    #voice-footer #send-btn:hover,
+    #voice-footer #upload-btn:hover,
+    #voice-footer #voice-chat-btn:hover {
+        background: linear-gradient(145deg, #f8f9fa, #ffffff) !important;
+        border-color: #a9cce3 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+        color: #1e3a8a !important;
+    }
+    
+    #voice-footer #send-btn:active,
+    #voice-footer #upload-btn:active,
+    #voice-footer #voice-chat-btn:active {
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Stato attivo per il pulsante voice-chat quando sta registrando */
+    #voice-footer #voice-chat-btn.recording {
+        background: linear-gradient(145deg, #ff6b6b, #ff5252) !important;
+        border-color: #ff4444 !important;
+        color: #ffffff !important;
+        animation: pulse 1.5s infinite !important;
+    }
+</style>
+
+<style>
+    /* Mobile Responsive Queries - Footer Centering */
+    
+    /* Query 1: Smartphone piccoli (≤375px) - iPhone SE, iPhone 12 Mini */
+    @media (max-width: 375px) {
+        #voice-footer {
+            /* FLEXBOX per centrare tutto */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100vw !important;
+            padding: 8px 8px !important;
+        }
+        
+        #voice-footer > div:first-child {
+            /* Centra il contenitore del footer */
+            max-width: 95% !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            position: relative !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            /* Input centrato */
+            width: 100% !important;
+            height: 36px !important;
+            padding: 8px 44px 8px 12px !important;
+            font-size: 12px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            border-radius: 18px !important;
+        }
+        
+        /* Pulsanti interni - NON sovrascrivere gli stili inline */
+        #voice-footer #send-btn,
+        #voice-footer #voice-chat-btn {
+            /* Mantieni i pulsanti nella posizione inline */
+            position: absolute !important;
+        }
+        
+        /* Risposta ChatGPT centrata */
+        #voice-footer #chatgpt-response {
+            font-size: 0.7em !important;
+            max-width: 100% !important;
+            padding: 4px 6px !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+        }
+    }
+
+    /* Query 2: Smartphone medi (376px-414px) - iPhone 12, Google Pixel */
+    @media (min-width: 376px) and (max-width: 414px) {
+        #voice-footer {
+            /* FLEXBOX per centramento */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100vw !important;
+            padding: 8px 10px !important;
+        }
+        
+        #voice-footer > div:first-child {
+            /* Centra tutto */
+            max-width: 95% !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            position: relative !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            /* Input centrato */
+            width: 100% !important;
+            height: 38px !important;
+            padding: 9px 48px 9px 12px !important;
+            font-size: 13px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            border-radius: 19px !important;
+        }
+        
+        /* Pulsanti interni */
+        #voice-footer #send-btn,
+        #voice-footer #voice-chat-btn {
+            position: absolute !important;
+        }
+        
+        /* Risposta ChatGPT centrata */
+        #voice-footer #chatgpt-response {
+            font-size: 0.8em !important;
+            max-width: 100% !important;
+            padding: 4px 8px !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+        }
+    }
+
+    /* Query 3: Smartphone larghi (415px-480px) - iPhone Plus, Android larghi */
+    @media (min-width: 415px) and (max-width: 480px) {
+        #voice-footer {
+            /* FLEXBOX per centramento */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100vw !important;
+            padding: 8px 12px !important;
+        }
+        
+        #voice-footer > div:first-child {
+            /* Centra tutto */
+            max-width: 95% !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            position: relative !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            /* Input centrato */
+            width: 100% !important;
+            height: 40px !important;
+            padding: 10px 50px 10px 12px !important;
+            font-size: 14px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            border-radius: 20px !important;
+        }
+        
+        /* Pulsanti interni */
+        #voice-footer #send-btn,
+        #voice-footer #voice-chat-btn {
+            position: absolute !important;
+        }
+        
+        /* Risposta ChatGPT centrata */
+        #voice-footer #chatgpt-response {
+            font-size: 0.8em !important;
+            max-width: 100% !important;
+            padding: 4px 8px !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+        }
+    }
+</style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E4E6F">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ChefCode">
+    <link rel="apple-touch-icon" href="pwa-icon-apple.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="pwa-icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="pwa-icon-512.png">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <button class="home-button" id="chefcode-logo-btn">
+                <i class="fas fa-home"></i>
+            </button>
+        </div>
+        <div class="header-center">
+            <h1 class="logo">ChefCode</h1>
+        </div>
+        <div class="header-right">
+            <div class="account-menu">
+                <button class="account-button">Account <span class="arrow-down">&#9660;</span></button>
+                <div class="dropdown-content">
+                    <a href="#">Profile</a>
+                    <a href="#">Settings</a>
+                    <a href="#">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- ...existing code... -->
+        <section id="step-selection-page" class="page-section active">
+            <div class="step-buttons-grid">
+                <button class="big-step-button" data-step="goods-in">
+                    <i class="fas fa-box-open"></i>
+                    <span>GOODS IN</span>
+                </button>
+                <button class="big-step-button" data-step="recipe-set-up">
+                    <i class="fas fa-utensils"></i>
+                    <span>RECIPE SET-UP</span>
+                </button>
+                <button class="big-step-button" data-step="production">
+                    <i class="fas fa-industry"></i>
+                    <span>PRODUCTION</span>
+                </button>
+                <button class="big-step-button" data-step="sales">
+                    <i class="fas fa-cash-register"></i>
+                    <span>SALES</span>
+                </button>
+                <button class="big-step-button" data-step="end-of-day">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>SHOPPING LIST</span>
+                </button>
+                <button class="big-step-button" data-step="dashboard-selection">
+                    <i class="fas fa-chart-line"></i>
+                    <span>DASHBOARD</span>
+                </button>
+                <button class="big-step-button" data-step="inventory-page">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>INVENTORY</span>
+                </button>
+                <button class="big-step-button" data-step="add-module">
+                    <i class="fas fa-plus"></i>
+                    <span>ADD MODULE</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="input-detail-page" class="page-section">
+            <div id="input-pages-container">
+                
+                <div id="goods-in-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>GOODS IN</h3></div>
+                    <div class="goods-in-buttons-grid">
+                        <button class="big-step-button" data-action="invoice-photo"><i class="fas fa-camera"></i><span>INVOICE PHOTO (OCR)</span></button>
+                        <button class="big-step-button" data-action="voice-input" style="display:none;"><i class="fas fa-microphone"></i><span>VOICE INPUT</span></button>
+                        <button class="big-step-button" data-action="manual-input"><i class="fas fa-keyboard"></i><span>MANUAL INPUT</span></button>
+                    </div>
+                </div>
+
+                <div id="manual-input-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="goods-in-content"><i class="fas fa-arrow-left"></i> Back</button><h3>MANUAL INPUT</h3></div>
+                    <form id="manual-entry-form" class="manual-form">
+                        <div class="form-group full-width"><label for="item-name">Item Name</label><input type="text" id="item-name" name="item-name" placeholder="e.g., San Marzano Tomatoes" required></div>
+                        <div class="form-group"><label for="item-quantity">Quantity</label><input type="number" id="item-quantity" name="item-quantity" placeholder="e.g., 25" step="0.01" required></div>
+                        <div class="form-group"><label for="item-unit">Unit</label><input type="text" id="item-unit" name="item-unit" placeholder="e.g., kg" required></div>
+                        <div class="form-group"><label for="item-category">Category</label><input type="text" id="item-category" name="item-category" placeholder="e.g., Vegetables" required></div>
+                        <div class="form-group"><label for="item-price">Unit Price (€)</label><input type="number" id="item-price" name="item-price" placeholder="e.g., 2.50" step="0.01" required></div>
+                    <div style="text-align:center; margin-top:16px;">
+                        <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Add to Inventory</button>
+                    </div>
+                    </form>
+                </div>
+
+                <div id="dashboard-selection-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>Select Dashboard</h3></div>
+                    <div class="step-buttons-grid">
+                        <button class="big-step-button" data-step="kitchen-dashboard"><i class="fas fa-utensils"></i><span>KITCHEN DASHBOARD</span></button>
+                        <button class="big-step-button" data-step="management-dashboard"><i class="fas fa-chart-bar"></i><span>MANAGEMENT DASHBOARD</span></button>
+                    </div>
+                </div>
+                
+                <div id="kitchen-dashboard-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="dashboard-selection-content"><i class="fas fa-arrow-left"></i> Back</button><h3>Chef's Operational Dashboard</h3></div>
+                    <div class="new-dashboard-grid kitchen-dash"><div class="new-dash-card"><h5 class="new-card-title">Today's Work Plan (Mise en Place)</h5><table class="prep-list-table"><thead><tr><th>Priority</th><th>Task</th><th>Status</th></tr></thead><tbody><tr><td><span class="priority high">High</span></td><td>Prepare Amatriciana Sauce (5L)</td><td><span class="status done">Done</span></td></tr><tr><td><span class="priority high">High</span></td><td>Clean Mussels and Clams</td><td><span class="status done">Done</span></td></tr><tr><td><span class="priority medium">Medium</span></td><td>Cut Vegetables for Soffritto</td><td><span class="status pending">To Do</span></td></tr><tr><td><span class="priority medium">Medium</span></td><td>Fillet Sea Bass (10 pcs)</td><td><span class="status pending">To Do</span></td></tr></tbody></table></div><div class="new-dash-card"><h5 class="new-card-title">Today's "Hot" Items</h5><table class="hot-items-table"><thead><tr><th>Dish</th><th>Qty</th><th>Margin</th></tr></thead><tbody><tr><td>Spaghetti Carbonara</td><td>18</td><td><span class="margin good">€ 10.90</span></td></tr><tr><td>Frittura di Calamari</td><td>12</td><td><span class="margin ok">€ 9.90</span></td></tr><tr><td>Tagliata di Manzo</td><td>9</td><td><span class="margin good">€ 14.30</span></td></tr><tr><td>Tonnarelli Cacio e Pepe</td><td>7</td><td><span class="margin good">€ 9.80</span></td></tr></tbody></table></div><div class="new-dash-card"><h5 class="new-card-title">Critical Stock</h5><ul class="dash-list"><li>Guanciale (under 1 kg)</li><li>Pecorino Romano</li><li>White Wine for cooking</li></ul></div><div class="new-dash-card"><h5 class="new-card-title">Use Soon (Anti-Waste)</h5><ul class="dash-list"><li>Fresh Porcini Mushrooms</li><li>Buffalo Mozzarella</li><li>Fresh Basil</li></ul></div><div class="new-dash-card full-width"><h5 class="new-card-title">Menu Engineering Analysis</h5><div class="menu-engineering-grid"><div class="quadrant puzzle"><h6>PUZZLES ❓</h6><small>High profit, low popularity. Needs promotion.</small><p>Filetto al Pepe Verde</p></div><div class="quadrant star"><h6>STARS ⭐</h6><small>High profit, high popularity. Our champions!</small><p>Tagliata di Manzo</p><p>Spaghetti Carbonara</p></div><div class="quadrant dog"><h6>DOGS 🐶</h6><small>Low profit, low popularity. Consider removing.</small><p>Insalatona "Chef"</p></div><div class="quadrant plow-horse"><h6>PLOW-HORSES 🐴</h6><small>Low profit, high popularity. Optimize cost.</small><p>Frittura di Calamari</p></div></div></div></div>
+                </div>
+
+                <div id="management-dashboard-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="dashboard-selection-content"><i class="fas fa-arrow-left"></i> Back</button><h3>Management Dashboard</h3></div>
+                    <div class="new-dashboard-grid"><div class="new-dash-card kpi-card"><h5 class="kpi-title">REVENUE</h5><p class="kpi-amount">$895,430</p></div><div class="new-dash-card kpi-card"><h5 class="kpi-title">AVERAGE TRANSACTION</h5><p class="kpi-amount">$34.49</p><small class="kpi-change up"><i class="fas fa-caret-up"></i> 3,1%</small></div><div class="new-dash-card kpi-card"><h5 class="kpi-title">ORDERS</h5><p class="kpi-amount">25,959</p><small class="kpi-change down"><i class="fas fa-caret-down"></i> 2,5%</small></div><div class="new-dash-card tall"><h5 class="new-card-title">SALES BY MONTH</h5><div class="bar-chart-v"><div class="bar-wrapper"><div class="bar" style="height: 20%;"></div><span class="bar-label-month">Jan</span></div><div class="bar-wrapper"><div class="bar" style="height: 30%;"></div><span class="bar-label-month">Feb</span></div><div class="bar-wrapper"><div class="bar" style="height: 45%;"></div><span class="bar-label-month">Mar</span></div><div class="bar-wrapper"><div class="bar" style="height: 60%;"></div><span class="bar-label-month">Apr</span></div><div class="bar-wrapper"><div class="bar" style="height: 55%;"></div><span class="bar-label-month">May</span></div><div class="bar-wrapper"><div class="bar" style="height: 70%;"></div><span class="bar-label-month">Jun</span></div><div class="bar-wrapper"><div class="bar" style="height: 85%;"></div><span class="bar-label-month">Jul</span></div><div class="bar-wrapper"><div class="bar" style="height: 95%;"></div><span class="bar-label-month">Aug</span></div></div></div><div class="new-dash-card tall"><h5 class="new-card-title">SALES BY CHANNEL</h5><div class="chart-with-legend"><div class="pie-chart"></div><div class="channel-list"><div class="channel-item"><i class="fas fa-circle channel-icon dine-in"></i><span class="channel-label">Dine-in</span><span class="channel-perc">70%</span></div><div class="channel-item"><i class="fas fa-circle channel-icon takeaway"></i><span class="channel-label">Takeaway</span><span class="channel-perc">15%</span></div><div class="channel-item"><i class="fas fa-circle channel-icon delivery"></i><span class="channel-label">Delivery</span><span class="channel-perc">15%</span></div></div></div></div><div class="new-dash-card tall"><h5 class="new-card-title">SALES BY CATEGORY</h5><div class="bar-chart-h"><div class="bar-item"><span class="bar-label">Food</span><div class="bar-bg"><div class="bar-fg food" style="width: 62%;"></div></div><span class="bar-perc">62%</span></div><div class="bar-item"><span class="bar-label">Beverage</span><div class="bar-bg"><div class="bar-fg beverage" style="width: 21%;"></div></div><span class="bar-perc">21%</span></div><div class="bar-item"><span class="bar-label">Dessert</span><div class="bar-bg"><div class="bar-fg dessert" style="width: 11%;"></div></div><span class="bar-perc">11%</span></div><div class="bar-item"><span class="bar-label">Other</span><div class="bar-bg"><div class="bar-fg other" style="width: 6%;"></div></div><span class="bar-perc">6%</span></div></div></div></div>
+                </div>
+
+                <div id="inventory-page-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>FOOD INVENTORY</h3></div>
+                    <div class="inventory-controls">
+                        <input type="search" id="inventory-search" placeholder="Search by name..."><select id="inventory-category-filter"><option value="all">All Categories</option><option value="Vegetables">Vegetables</option><option value="Dry Goods">Dry Goods</option><option value="Dairy">Dairy</option><option value="Meat">Meat</option><option value="Oils">Oils</option><option value="Herbs">Herbs</option><option value="Pasta">Pasta</option><option value="Fish">Fish</option><option value="Legumes">Legumes</option><option value="Bakery">Bakery</option><option value="Beverages">Beverages</option><option value="Sweets">Sweets</option><option value="Condiments">Condiments</option><option value="Nuts">Nuts</option></select>
+                        <button id="expand-table-btn" class="icon-btn" title="Collapse to Summary"><i class="fas fa-chevron-up"></i></button>
+                    </div>
+                    <div class="inventory-table-container">
+                        <table>
+                            <thead><tr><th>Item</th><th>Unit Price</th><th>Unit</th><th>Quantity</th><th>Category</th><th>Total Value</th></tr></thead>
+                            <tbody id="inventory-table-body">
+                                <!-- Inventory items will be loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="inventory-summary"><h4>Total Inventory Value: <span id="inventory-total-value">€2,362.90</span></h4></div>
+                </div>
+
+                <div id="camera-simulation-page" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="goods-in-content"><i class="fas fa-arrow-left"></i> Back</button><h3>TAKE INVOICE PHOTO</h3></div>
+                    <div class="camera-preview-container"><div class="camera-viewfinder"><i class="fas fa-camera-retro"></i><p>Place invoice here</p></div></div>
+                    <div class="camera-controls">
+                        <button id="take-photo-btn" class="input-btn"><i class="fas fa-circle"></i><span>Take Photo</span></button>
+                        <button id="retake-photo-btn" class="input-btn" style="display: none;"><i class="fas fa-redo"></i><span>Retake Photo</span></button>
+                        <button id="confirm-photo-btn" class="input-btn" style="display: none;"><i class="fas fa-check"></i><span>Confirm Photo & OCR</span></button>
+                    </div>
+                    <div class="output-section camera-output" style="display: none;">
+                        <h4>OCR Result Simulation</h4>
+                        <ul><li>Invoice #: INV2025-07-001</li><li>Date: 03/07/2025</li><li>Supplier: Global Foods S.p.A.</li><li>Items detected: 5</li><li>Total Amount: €150.00</li></ul>
+                    </div>
+                </div>
+
+                <div id="voice-input-page-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="goods-in-content"><i class="fas fa-arrow-left"></i> Back</button><h3>VOICE INPUT</h3></div>
+                    <div class="voice-input-container">
+                        <p id="voice-status">Voice input temporarily disabled</p>
+                        <div class="voice-mic-container" style="display: none;"><button id="microphone-btn"><i class="fas fa-microphone"></i></button><span id="mic-label">Start Recording</span></div>
+                        <div id="voice-recognized-text" class="output-section" style="display: none;">
+                            <h4>Recognized Text</h4><p id="recognized-text-content"></p>
+                            <button id="process-voice-btn" class="input-btn"><i class="fas fa-check"></i><span>Process Input</span></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="recipe-set-up-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>RECIPE SET-UP</h3></div>
+                    <form id="recipe-form">
+                        <div class="form-group full-width"><label for="recipe-name">Recipe Name</label><input type="text" id="recipe-name" required placeholder="e.g., Spaghetti alla Carbonara"></div>
+                        <div class="form-group full-width"><label for="recipe-instructions">Instructions</label><textarea id="recipe-instructions" rows="4" placeholder="Describe the preparation steps..."></textarea></div>
+                    </form>
+                    <!-- === RECIPE YIELD (quanto prodotto fa 1 batch) === -->
+<div class="form-group full-width">
+    <label for="recipe-yield-qty">Recipe yield (product obtained per batch)</label>
+  <div class="yield-row">
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="number" id="recipe-yield-qty" placeholder="es. 10" step="0.01" style="width:100px;">
+            <select id="recipe-yield-unit" style="width:80px;">
+                <option value="pz">pz</option>
+                <option value="kg">kg</option>
+                <option value="g">g</option>
+                <option value="lt">lt</option>
+                <option value="ml">ml</option>
+            </select>
+        </div>
+  </div>
+</div>
+
+                    <div class="add-ingredient-section">
+                        <div class="form-group"><label for="ingredient-select">Select Ingredient</label><select id="ingredient-select"><option value="" disabled selected>-- Choose an ingredient --</option></select></div>
+                        <div class="form-group"><label for="ingredient-qty">Quantity</label><input type="number" id="ingredient-qty" placeholder="e.g., 150"></div>
+                        <div class="form-group"><label for="ingredient-unit">Unit</label><select id="ingredient-unit"><option>g</option><option>kg</option><option>ml</option><option>l</option><option>pz</option></select></div>
+                        <button id="add-ingredient-btn" class="icon-btn"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div class="ingredients-list-container">
+                        <ul id="recipe-ingredients-list"></ul>
+                    </div>
+                    <button id="save-recipe-btn" class="submit-btn"><i class="fas fa-save"></i> Save Recipe</button>
+                </div>
+                
+                <div id="production-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>PRODUCTION</h3></div>
+<div class="add-production-task-section">
+  <!-- Recipe -->
+  <div class="form-group">
+    <label for="recipe-select-prod">Recipe to Prepare</label>
+    <select id="recipe-select-prod">
+      <option value="" disabled selected>-- Choose a recipe --</option>
+    </select>
+  </div>
+
+  <!-- Quantity -->
+  <div class="form-group">
+    <label for="production-qty">Quantity to Produce</label>
+    <input type="text" id="production-qty" placeholder="Insert Quantity">
+  </div>
+
+  <!-- Unità di misura (resta com’era) -->
+  <div class="form-group">
+    <label for="production-unit">Unit</label>
+    <select id="production-unit">
+      <option value="kg">kg</option>
+      <option value="g">g</option>
+      <option value="lt">lt</option>
+      <option value="ml">ml</option>
+      <option value="pz">pz</option>
+    </select>
+  </div>
+
+  <!-- Assign to -->
+  <div class="form-group">
+    <label for="assign-to">Assign to</label>
+    <select id="assign-to">
+      <option>Luca</option>
+      <option>Sofia</option>
+      <option>Marco</option>
+      <option>Tutti</option>
+    </select>
+  </div>
+
+  <!-- Initial Status (nuovo) -->
+ <div class="form-group">
+  <label for="initial-status">Initial Status</label>
+  <select id="initial-status">
+    <option value="todo" selected>To Do</option>
+    <option value="completed">Completed Task</option>
+  </select>
+</div>
+
+<button id="add-task-btn" class="submit-btn small-btn">
+  <i class="fas fa-plus"></i> Add to List
+    </button>
+
+        <!-- RIMOSSI I TAB BUTTON, SOLO DUE COLONNE VISIBILI -->
+    <div class="production-tasks-tabbed">
+        <div id="todo-tasks" class="task-list prod-tab-panel active"></div>
+        <div id="completed-tasks-list" class="task-list prod-tab-panel"></div>
+    </div>
+
+</div>
+                                </div>
+                </div>
+
+                <div id="sales-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>SALES</h3></div><p>Record sales and update stock.</p>
+                </div>
+                <div id="end-of-day-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>SHOPPING LIST</h3></div><p>Generate and manage your daily shopping list.</p>
+                </div>
+
+                <div id="add-module-content" class="input-page">
+                    <div class="page-header-with-back"><button class="back-button" data-back-target="step-selection-page"><i class="fas fa-arrow-left"></i> Back</button><h3>Add New Module</h3></div>
+                    <p>Module creation/selection interface will be here...</p>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+<style>
+    main.main-container { padding-bottom: 120px; }
+    footer#voice-footer { 
+        width: 100% !important; 
+        position: fixed !important; 
+        left: 0 !important; 
+        right: 0 !important;
+        bottom: 0 !important; 
+        z-index: 100 !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    
+    /* Footer blu - CENTRAMENTO FORZATO */
+    #voice-footer {
+        background-color: #2E4E6F !important;
+        color: #ffffff !important;
+        padding: 10px 0px !important;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+    
+    /* Aggiorna i colori del testo nel footer */
+    #voice-footer #voice-status-label {
+        color: #ffffff !important;
+    }
+    
+    #voice-footer #chatgpt-response {
+        color: #ffffff !important;
+    }
+    
+    #voice-footer #voice-result {
+        color: #ffffff !important;
+    }
+    
+    /* Stile del pulsante microfono nel footer blu */
+    #voice-footer #voice-btn {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        border-radius: 50% !important;
+        color: #ffffff !important;
+        font-size: 2em !important;
+        padding: 6px 16px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    #voice-footer #voice-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Stile del pulsante Send nel footer blu */
+    #voice-footer button[type="submit"] {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        color: #ffffff !important;
+        transition: all 0.3s ease;
+    }
+    
+    #voice-footer button[type="submit"]:hover {
+        background: rgba(255, 255, 255, 0.3) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    /* Stile responsive per l'input ChatGPT */
+    #voice-footer #chatgpt-input {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 2px solid rgba(255, 255, 255, 0.8) !important;
+    /* Hide standalone voice parser button to prevent layout shift */
+    #voice-footer #voice-btn {
+        display: none !important;
+    }
+    }
+    
+    #voice-footer #chatgpt-input:focus {
+        background: rgba(255, 255, 255, 1) !important;
+        border-color: #3498db !important;
+        outline: none !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 10px rgba(52, 152, 219, 0.3) !important;
+        transform: scale(1.01) !important;
+    }
+    
+    /* Stile uniforme per tutti i pulsanti nel footer */
+    #voice-footer #send-btn:hover,
+    #voice-footer #voice-chat-btn:hover,
+    #voice-footer #upload-btn:hover {
+        background: linear-gradient(145deg, #e8e8e8, #d0d0d0) !important;
+        transform: translateY(-2px) scale(1.05) !important;
+    }
+    
+    /* QUERY CSS CENTRAMENTO MOBILE - Approccio completo */
+    
+    /* Query 1: Smartphone piccoli (iPhone SE, Galaxy S8) - CENTRAMENTO CORRETTO */
+    @media screen and (max-width: 375px) {
+        #voice-footer {
+            /* Footer fisso in basso - NO spostamenti */
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            padding: 8px 10px !important;
+            background-color: #2E4E6F !important;
+            box-sizing: border-box !important;
+            
+            /* Centramento con flexbox */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        #voice-footer > div:first-child {
+            /* Contenitore centrato con margin auto */
+            width: 90% !important;
+            max-width: 320px !important;
+            margin: 0 auto !important;
+            
+            /* Layout colonna centrato */
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            text-align: center !important;
+        }
+        
+        #voice-footer > div:first-child > div:first-child {
+            /* Riga elementi centrata */
+            width: 100% !important;
+            margin: 0 auto !important;
+            
+            /* Flexbox per allineare elementi */
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+        }
+        
+        #voice-footer #upload-btn {
+            width: 36px !important;
+            height: 36px !important;
+            flex-shrink: 0 !important;
+        }
+        
+        #voice-footer > div:first-child > div:first-child > div:last-child {
+            /* Container input centrato con margin auto */
+            flex: 1 !important;
+            max-width: 240px !important;
+            margin: 0 auto !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            /* Input centrato */
+            width: 100% !important;
+            height: 36px !important;
+            padding: 8px 44px 8px 12px !important;
+            font-size: 12px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            border-radius: 18px !important;
+        }
+    }
+    
+    /* Query 2: Smartphone standard (iPhone 12, Pixel) - CENTRAMENTO CORRETTO */
+    @media screen and (min-width: 376px) and (max-width: 414px) {
+        #voice-footer {
+            /* Footer fisso normale */
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            padding: 10px 15px !important;
+            background-color: #2E4E6F !important;
+            box-sizing: border-box !important;
+            
+            /* Centramento con flexbox */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        #voice-footer > div:first-child {
+            /* Contenitore con margin auto per centrare */
+            width: 85% !important;
+            max-width: 350px !important;
+            margin: 0 auto !important;
+            
+            /* Layout colonna */
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            text-align: center !important;
+        }
+        
+        #voice-footer > div:first-child > div:first-child {
+            /* Riga centrata */
+            width: 100% !important;
+            margin: 0 auto !important;
+            
+            /* Flexbox per elementi */
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+        }
+        
+        #voice-footer #upload-btn {
+            width: 40px !important;
+            height: 40px !important;
+            flex-shrink: 0 !important;
+        }
+        
+        #voice-footer > div:first-child > div:first-child > div:last-child {
+            /* Input container con margin auto */
+            flex: 1 !important;
+            max-width: 280px !important;
+            margin: 0 auto !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            /* Input centrato */
+            width: 100% !important;
+            height: 40px !important;
+            padding: 10px 45px 10px 15px !important;
+            font-size: 13px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            border-radius: 20px !important;
+        }
+    }
+    
+    /* Query 3: Smartphone larghi e piccoli tablet - CENTRAMENTO CORRETTO */
+    @media screen and (min-width: 415px) and (max-width: 480px) {
+        #voice-footer {
+            /* Footer normale senza spostamenti */
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            padding: 12px 20px !important;
+            background-color: #2E4E6F !important;
+            box-sizing: border-box !important;
+            
+            /* Centramento con flexbox */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        #voice-footer > div:first-child {
+            /* Contenitore centrato - TECNICA MARGIN AUTO */
+            width: 80% !important;
+            max-width: 400px !important;
+            margin: 0 auto !important;
+            
+            /* Layout colonna */
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+            text-align: center !important;
+        }
+        
+        #voice-footer > div:first-child > div:first-child {
+            /* Riga elementi - centrata con margin auto */
+            width: 100% !important;
+            margin: 0 auto !important;
+            
+            /* Flexbox */
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+        }
+        
+        #voice-footer #upload-btn {
+            width: 42px !important;
+            height: 42px !important;
+            flex-shrink: 0 !important;
+        }
+        
+        #voice-footer > div:first-child > div:first-child > div:last-child {
+            /* Container input - margin auto per centrare */
+            flex: 1 !important;
+            max-width: 320px !important;
+            margin: 0 auto !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            /* Input centrato con margin auto */
+            width: 100% !important;
+            height: 42px !important;
+            padding: 12px 48px 12px 16px !important;
+            font-size: 14px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+            border-radius: 21px !important;
+        }
+    }
+        
+        /* Pulsanti interni - mantieni stili originali su mobile */
+        @media screen and (max-width: 480px) {
+            #voice-footer #send-btn,
+            #voice-footer #voice-chat-btn {
+                /* Mantieni posizionamento assoluto originale */
+                width: 32px !important;
+                height: 32px !important;
+                right: 8px !important;
+                /* Ripristina colori originali */
+                background: linear-gradient(145deg, #ffffff, #e8e8e8) !important;
+                border: 2px solid #ffffff !important;
+                color: #2c3e50 !important;
+            }
+            
+            #voice-footer #send-btn i,
+            #voice-footer #voice-chat-btn i {
+                font-size: 0.9em !important;
+            }
+        }
+        
+        /* Risposta ChatGPT centrata per tutte le query */
+        #voice-footer #chatgpt-response {
+            font-size: 0.8em !important;
+            max-width: 100% !important;
+            padding: 4px 8px !important;
+            text-align: center !important;
+            margin: 0 auto !important;
+            box-sizing: border-box !important;
+        }
+    }
+    
+    /* Tablet: Flexbox centrato con più spazio */
+    @media (min-width: 481px) and (max-width: 768px) {
+        #voice-footer {
+            padding: 10px 15px !important;
+            /* FLEXBOX per centramento */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        #voice-footer > div:first-child {
+            max-width: 500px !important;
+            width: 100% !important;
+            /* TEXT-ALIGN per elementi testuali */
+            text-align: center !important;
+            margin: 0 auto !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            font-size: 15px !important;
+            min-height: 45px !important;
+            text-align: left !important;
+            resize: none !important;
+        }
+    }
+    
+    /* ChatGPT-style textarea responsive behavior */
+    @media screen and (max-width: 480px) {
+        #voice-footer #chatgpt-input {
+            /* Mobile: textarea ridimensionabile */
+            min-height: 42px !important;
+            max-height: 120px !important;
+            padding: 12px 48px 12px 16px !important;
+            line-height: 1.4 !important;
+            overflow-y: auto !important;
+            resize: none !important;
+            text-align: left !important;
+        }
+        
+        #voice-footer > div:first-child > div:first-child > div:last-child {
+            /* Container input - responsive width */
+            max-width: calc(100vw - 80px) !important;
+            min-width: 200px !important;
+        }
+    }
+    
+    @media (min-width: 481px) and (max-width: 768px) {
+        #voice-footer #chatgpt-input {
+            /* Tablet: textarea con più spazio */
+            min-height: 45px !important;
+            max-height: 160px !important;
+            padding: 12px 50px 12px 16px !important;
+            line-height: 1.5 !important;
+            overflow-y: auto !important;
+            resize: none !important;
+            text-align: left !important;
+        }
+    }
+    
+    @media (min-width: 769px) {
+        #voice-footer #chatgpt-input {
+            /* Desktop: textarea full-featured */
+            min-height: 45px !important;
+            max-height: 200px !important;
+            padding: 12px 50px 12px 16px !important;
+            line-height: 1.5 !important;
+            overflow-y: auto !important;
+            resize: none !important;
+            text-align: left !important;
+        }
+    }
+    
+    /* Desktop: Flexbox con layout ottimizzato */
+    @media (min-width: 769px) {
+        #voice-footer {
+            padding: 12px 20px !important;
+            /* FLEXBOX per centramento orizzontale e verticale */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
+        #voice-footer > div:first-child {
+            max-width: 600px !important;
+            width: 100% !important;
+            /* TEXT-ALIGN per elementi testuali e immagini */
+            text-align: center !important;
+            margin: 0 auto !important;
+        }
+        
+        #voice-footer #chatgpt-input {
+            font-size: 16px !important;
+            height: 48px !important;
+            /* TEXT-ALIGN per centrare il testo dentro l'input */
+            text-align: center !important;
+        }
+    }
+</style>
+</main>
+<footer id="voice-footer">
+    <div style="display: flex; justify-content: center; align-items: center; width: 100%; box-sizing: border-box; margin: 0 auto;">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 600px; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%;">
+                <button id="upload-btn" type="button" title="Upload File" style="background: linear-gradient(145deg, #ffffff, #e8e8e8); border: 2px solid #ffffff; color: #2c3e50; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; cursor: pointer; flex-shrink: 0;">
+                    <i class="fas fa-plus" style="font-size: 1.2em;"></i>
+                </button>
+                <div style="position: relative; width: 100%; max-width: 100%; flex: 1; box-sizing: border-box;">
+                    <textarea id="chatgpt-input" placeholder="Ask me anything..." style="width: 100%; max-width: 100%; padding: 12px 50px 12px 16px; border-radius: 25px; border: 2px solid #ffffff; background: rgba(255, 255, 255, 0.95); color: #2c3e50; font-size: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; outline: none; box-sizing: border-box; min-height: 45px; max-height: 200px; resize: none; overflow-y: auto; font-family: inherit; line-height: 1.5; min-width: 0;"></textarea>
+                    <button id="send-btn" type="button" title="Send Message" style="position: absolute; right: 6px; bottom: 6px; background: linear-gradient(145deg, #ffffff, #e8e8e8); border: 2px solid #ffffff; color: #2c3e50; border-radius: 50%; width: 36px; height: 36px; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; cursor: pointer;">
+                        <i class="fas fa-paper-plane" style="font-size: 1em;"></i>
+                    </button>
+                    <button id="voice-chat-btn" type="button" title="Voice Message" style="position: absolute; right: 6px; bottom: 6px; background: linear-gradient(145deg, #ffffff, #e8e8e8); border: 2px solid #ffffff; color: #2c3e50; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; cursor: pointer;">
+                        <i class="fas fa-microphone" style="font-size: 1em;"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="chatgpt-response" style="font-size:0.85em; min-height:20px; max-width:400px; max-height:60px; overflow-y:auto; text-align:center; word-wrap:break-word; transition:opacity 0.3s ease; color: #ffffff;"></div>
+        </div>
+        </div>
+        <div style="display:none; flex-direction:column; align-items:center;">
+            <!-- Standalone voice parser button hidden to avoid affecting centering -->
+            <button id="voice-btn" style="display:none;">
+                <i class="fas fa-microphone" id="voice-mic-icon" style="font-size: 1.5em;"></i>
+            </button>
+            <div id="voice-status-label" style="font-size:0.9em; margin-top:6px; color:#ffffff; font-weight:500;">Press to speak</div>
+        </div>
+    <div id="voice-result" style="margin-top:8px; font-size:1em; text-align:center;"></div>
+</footer>
+    
+    <!-- PWA Installation and Service Worker -->
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('✅ ChefCode PWA: Service Worker registered successfully');
+                        
+                        // Listen for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available
+                                    if (confirm('🔄 ChefCode: New version available! Reload to update?')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('❌ ChefCode PWA: Service Worker registration failed:', error);
+                    });
+            });
+            
+            // Listen for messages from service worker
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data.type === 'SERVER_ONLINE') {
+                    console.log('🌐 ChefCode PWA: Server connection restored');
+                    // Could show a notification or update UI
+                }
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        let installButton;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('📱 ChefCode PWA: Install prompt available');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button/hint
+            showInstallPrompt();
+        });
+        
+        function showInstallPrompt() {
+            // Create install notification
+            const installBanner = document.createElement('div');
+            installBanner.id = 'pwa-install-banner';
+            installBanner.innerHTML = `
+                <div style="
+                    position: fixed; 
+                    top: 90px; 
+                    left: 10px; 
+                    right: 10px; 
+                    background: linear-gradient(145deg, #2E4E6F, #1a2f45);
+                    color: white; 
+                    padding: 12px 16px; 
+                    border-radius: 8px; 
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    z-index: 1001;
+                    animation: slideDown 0.3s ease;
+                ">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-mobile-alt" style="font-size: 1.2em;"></i>
+                        <div style="flex: 1;">
+                            <strong>📱 Install ChefCode</strong><br>
+                            <small>Add to your home screen for the best experience!</small>
+                        </div>
+                        <button onclick="installPWA()" style="
+                            background: #4CAF50; 
+                            color: white; 
+                            border: none; 
+                            padding: 8px 16px; 
+                            border-radius: 6px; 
+                            cursor: pointer;
+                            font-weight: bold;
+                        ">Install</button>
+                        <button onclick="dismissInstall()" style="
+                            background: transparent; 
+                            color: #ccc; 
+                            border: 1px solid #666; 
+                            padding: 8px 12px; 
+                            border-radius: 6px; 
+                            cursor: pointer;
+                        ">×</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(installBanner);
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                if (document.getElementById('pwa-install-banner')) {
+                    dismissInstall();
+                }
+            }, 10000);
+        }
+        
+        window.installPWA = async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`🎯 ChefCode PWA: Install outcome: ${outcome}`);
+                deferredPrompt = null;
+                dismissInstall();
+            }
+        };
+        
+        window.dismissInstall = () => {
+            const banner = document.getElementById('pwa-install-banner');
+            if (banner) {
+                banner.remove();
+            }
+        };
+        
+        // Detect if running as PWA
+        window.addEventListener('load', () => {
+            if (window.matchMedia('(display-mode: standalone)').matches || 
+                window.navigator.standalone === true) {
+                console.log('🎉 ChefCode PWA: Running as installed app!');
+                document.body.classList.add('pwa-installed');
+                
+                // Add extra padding for iOS notch
+                if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                    document.body.style.paddingTop = 'max(80px, env(safe-area-inset-top))';
+                }
+            }
+        });
+    </script>
+    
+    <style>
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* PWA specific styles */
+        .pwa-installed .header {
+            padding-top: max(15px, env(safe-area-inset-top));
+        }
+        
+        @media (display-mode: standalone) {
+            /* Hide browser UI hints when installed */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: env(safe-area-inset-top);
+                background: #2E4E6F;
+                z-index: 1000;
+            }
+        }
+    </style>
+    
+    <script src="script.js"></script>
+    
+    <!-- ChatGPT-like textarea auto-resize functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('chatgpt-input');
+            const sendBtn = document.getElementById('send-btn');
+            const voiceBtn = document.getElementById('voice-chat-btn');
+            
+            if (textarea) {
+                // Auto-resize function
+                function autoResize() {
+                    textarea.style.height = 'auto';
+                    
+                    // Get max height based on screen size
+                    const maxHeight = window.innerWidth <= 480 ? 120 : 
+                                     window.innerWidth <= 768 ? 160 : 200;
+                    
+                    const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+                    textarea.style.height = newHeight + 'px';
+                    
+                    // Update button positions - keep them vertically centered
+                    const buttonTop = Math.max(6, (newHeight - 36) / 2);
+                    if (sendBtn) {
+                        sendBtn.style.bottom = buttonTop + 'px';
+                    }
+                    if (voiceBtn) {
+                        voiceBtn.style.bottom = buttonTop + 'px';
+                    }
+                }
+                
+                // Toggle buttons based on input
+                function toggleButtons() {
+                    const hasText = textarea.value.trim().length > 0;
+                    if (sendBtn && voiceBtn) {
+                        sendBtn.style.display = hasText ? 'flex' : 'none';
+                        voiceBtn.style.display = hasText ? 'none' : 'flex';
+                    }
+                }
+                
+                // Event listeners
+                textarea.addEventListener('input', function() {
+                    autoResize();
+                    toggleButtons();
+                });
+                
+                textarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        if (textarea.value.trim()) {
+                            // Send message logic here
+                            console.log('Sending message:', textarea.value);
+                            textarea.value = '';
+                            autoResize();
+                            toggleButtons();
+                        }
+                    }
+                });
+                
+                // Send button click
+                if (sendBtn) {
+                    sendBtn.addEventListener('click', function() {
+                        if (textarea.value.trim()) {
+                            console.log('Sending message:', textarea.value);
+                            textarea.value = '';
+                            autoResize();
+                            toggleButtons();
+                        }
+                    });
+                }
+                
+                // Initial setup
+                autoResize();
+                toggleButtons();
+            }
+        });
+    </script>
+</body>
+</html>

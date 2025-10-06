@@ -7,6 +7,9 @@
    PATCH 1.2.2 — Stable (Inventory deduction + Production fix)
 */
 
+// Configurazione API URL - RENDER ENDPOINT CORRETTO
+const API_BASE_URL = 'https://chefcode-backend-1.onrender.com';
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- ChatGPT LLM Chat ---
   const sendBtn = document.getElementById('send-btn');
@@ -15,22 +18,70 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatgptInput = document.getElementById('chatgpt-input');
   const chatgptResponse = document.getElementById('chatgpt-response');
 
-  // Funzione per inviare messaggio ChatGPT
+  // Funzione per inviare messaggio ChatGPT (con fallback come ChefCode 2.0)
   const sendChatGPTMessage = async () => {
     const prompt = chatgptInput.value.trim();
     if (!prompt) return;
-    chatgptResponse.textContent = 'Loading...';
+    chatgptResponse.textContent = '🤖 Loading...';
+    
     try {
-      const res = await fetch('http://localhost:3000/api/chatgpt-smart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ prompt })
-      });
-      const data = await res.json();
-      if (data.choices && data.choices[0] && data.choices[0].message) {
+      console.log('🚀 Invio prompt a Render:', API_BASE_URL);
+      
+      let data = null;
+      let success = false;
+      
+      // Prima prova con chatgpt-smart (endpoint principale)
+      try {
+        console.log('📡 Tentativo 1: /api/chatgpt-smart');
+        const res = await fetch(`${API_BASE_URL}/api/chatgpt-smart`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ prompt })
+        });
+        
+        if (res.ok) {
+          data = await res.json();
+          success = true;
+          console.log('✅ Successo con chatgpt-smart');
+        }
+      } catch (smartError) {
+        console.log('⚠️ Errore chatgpt-smart:', smartError.message);
+      }
+      
+      // Se il primo fallisce, prova con l'endpoint standard
+      if (!success) {
+        try {
+          console.log('📡 Tentativo 2: /api/chatgpt');
+          const res = await fetch(`${API_BASE_URL}/api/chatgpt`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt })
+          });
+          
+          if (res.ok) {
+            data = await res.json();
+            success = true;
+            console.log('✅ Successo con chatgpt standard');
+          }
+        } catch (stdError) {
+          console.log('⚠️ Errore chatgpt standard:', stdError.message);
+        }
+      }
+      
+      // Processa la risposta se abbiamo successo
+      if (success && data && data.choices && data.choices[0] && data.choices[0].message) {
         chatgptResponse.textContent = data.choices[0].message.content;
+        console.log('🎉 Risposta AI ricevuta:', data.choices[0].message.content.substring(0, 50) + '...');
+        
+        // Mostra l'overlay della chat
+        const aiChatOverlay = document.getElementById('ai-chat-overlay');
+        if (aiChatOverlay) {
+          aiChatOverlay.style.display = 'block';
+        }
         
         // Se la risposta include dati sincronizzati, aggiorna lo STATE locale
         if (data.syncData) {
@@ -50,35 +101,50 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Pulisci l'input dopo la risposta
         chatgptInput.value = '';
-        // Cancella la risposta dopo 3 secondi per non allargare il footer
+        // Reset pulsanti dopo aver pulito l'input
+        sendBtn.style.display = 'none';
+        voiceChatBtn.style.display = 'flex';
+        
+        // Cancella la risposta dopo 8 secondi
         setTimeout(() => {
-          chatgptResponse.style.opacity = '0';
-          setTimeout(() => {
-            chatgptResponse.textContent = '';
-            chatgptResponse.style.opacity = '1';
-          }, 300);
-        }, 3000);
+          if (aiChatOverlay) {
+            aiChatOverlay.style.display = 'none';
+          }
+          chatgptResponse.textContent = '';
+        }, 8000);
       } else {
-        chatgptResponse.textContent = 'No response.';
-        // Cancella anche i messaggi di errore dopo 3 secondi
+        // Nessuna risposta valida dai server
+        const errorMsg = data && data.error ? data.error : 'Nessuna risposta dal server AI';
+        chatgptResponse.textContent = `❌ Errore: ${errorMsg}`;
+        console.error('❌ Errore AI:', errorMsg);
+        
+        const aiChatOverlay = document.getElementById('ai-chat-overlay');
+        if (aiChatOverlay) {
+          aiChatOverlay.style.display = 'block';
+        }
+        // Cancella anche i messaggi di errore dopo 5 secondi
         setTimeout(() => {
-          chatgptResponse.style.opacity = '0';
-          setTimeout(() => {
-            chatgptResponse.textContent = '';
-            chatgptResponse.style.opacity = '1';
-          }, 300);
-        }, 3000);
+          if (aiChatOverlay) {
+            aiChatOverlay.style.display = 'none';
+          }
+          chatgptResponse.textContent = '';
+        }, 5000);
       }
     } catch (err) {
-      chatgptResponse.textContent = 'Error: ' + err.message;
-      // Cancella anche i messaggi di errore dopo 3 secondi
+      console.error('💥 Errore generale AI:', err);
+      chatgptResponse.textContent = `💥 Errore connessione: ${err.message}. Verifica che Render sia attivo.`;
+      
+      const aiChatOverlay = document.getElementById('ai-chat-overlay');
+      if (aiChatOverlay) {
+        aiChatOverlay.style.display = 'block';
+      }
+      // Cancella anche i messaggi di errore dopo 10 secondi
       setTimeout(() => {
-        chatgptResponse.style.opacity = '0';
-        setTimeout(() => {
-          chatgptResponse.textContent = '';
-          chatgptResponse.style.opacity = '1';
-        }, 300);
-      }, 3000);
+        if (aiChatOverlay) {
+          aiChatOverlay.style.display = 'none';
+        }
+        chatgptResponse.textContent = '';
+      }, 5000);
     }
   };
 
@@ -91,6 +157,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Enter') {
         e.preventDefault();
         sendChatGPTMessage();
+      }
+    });
+    
+    // Toggle pulsanti send/voice in base al contenuto dell'input
+    chatgptInput.addEventListener('input', () => {
+      const hasText = chatgptInput.value.trim().length > 0;
+      if (hasText) {
+        sendBtn.style.display = 'flex';
+        voiceChatBtn.style.display = 'none';
+      } else {
+        sendBtn.style.display = 'none';
+        voiceChatBtn.style.display = 'flex';
       }
     });
   }
@@ -329,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sincronizza i dati con il server per permettere alla chat di accedervi
   async function syncWithServer() {
     try {
-      await fetch('http://localhost:3000/api/sync-data', {
+      await fetch(`${API_BASE_URL}/api/sync-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -494,13 +572,28 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
   }
 
   function showPage(pageId){
-    if (!stepSelectionPage || !inputDetailPage || !inputPagesContainer) return;
+    console.log('📄 showPage chiamata con:', pageId);
+    
+    if (!stepSelectionPage || !inputDetailPage || !inputPagesContainer) {
+      console.error('❌ Elementi base mancanti:', { stepSelectionPage, inputDetailPage, inputPagesContainer });
+      return;
+    }
+    
     qa('.input-page').forEach(p => p.classList.remove('active'));
     stepSelectionPage.classList.remove('active');
     inputDetailPage.classList.remove('active');
+    
     const target = el(pageId);
-    if (target){ target.classList.add('active'); inputDetailPage.classList.add('active'); }
-    else { stepSelectionPage.classList.add('active'); }
+    console.log('🎯 Target element:', target);
+    
+    if (target){ 
+      target.classList.add('active'); 
+      inputDetailPage.classList.add('active');
+      console.log('✅ Pagina attivata:', pageId);
+    } else { 
+      stepSelectionPage.classList.add('active');
+      console.log('⚠️ Target non trovato, torno alla home');
+    }
     // Mostra i tab solo se sei nella pagina production
     prodPanels.forEach(el => {
       el.style.display = (pageId === 'production-content') ? '' : 'none';
@@ -513,73 +606,74 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
       const pid  = findPageIdForStep(step || '');
       if (pid) showPage(pid);
       else showPage('step-selection-page');
-     /* ==== PATCH LAYOUT-4x2 — pulizia stili inline sul Back (append-only) ==== */
-(function enforceHomeGridOnBack(){
-  const home = document.getElementById('step-selection-page');
-  if (!home) return;
-  const grid = home.querySelector('.step-buttons-grid');
-  if (!grid) return;
-
-  function cleanInline() {
-    // rimuove qualsiasi style inline che possa stringere i riquadri
-    grid.removeAttribute('style');
-    if (grid.style) {
-      grid.style.gridTemplateColumns = '';
-      grid.style.gridTemplateRows = '';
-      grid.style.gap = '';
-    }
-  }
-
-  // Dopo qualunque click su un back-button, quando la home è visibile ripulisci
-  document.addEventListener('click', (e) => {
-    const back = e.target.closest('.back-button');
-    if (!back) return;
-    const targetId = back.dataset.backTarget || '';
-    setTimeout(() => {
-      if (targetId === 'step-selection-page' || home.classList.contains('active')) {
-        cleanInline(); // il CSS sopra fa il resto (4x2 responsive)
-      }
-    }, 0);
-  }, true);
-
-  // Safety net: se la home diventa active per altri motivi
-  const mo = new MutationObserver(() => {
-    if (home.classList.contains('active')) cleanInline();
-  });
-  mo.observe(home, { attributes: true, attributeFilter: ['class'] });
-})();
- /* === PATCH 1.1.6 — Forza il centro della dashboard al ritorno (append-only) === */
-(function centerHomeGridOnActivate(){
-  const home = document.getElementById('step-selection-page');
-  const grid = home ? home.querySelector('.step-buttons-grid') : null;
-  if (!home || !grid) return;
-
-  function centerNow(){
-    // nessuna misura fissa: centratura a contenuto (resta responsive)
-    grid.style.width = 'fit-content';
-    grid.style.marginLeft = 'auto';
-    grid.style.marginRight = 'auto';
-    grid.style.justifyContent = 'center';
-  }
-
-  // Quando premi "Back" e torni alla home, centra
-  document.addEventListener('click', (e) => {
-    const back = e.target.closest('.back-button');
-    if (!back) return;
-    setTimeout(() => {
-      if (home.classList.contains('active')) centerNow();
-    }, 0);
-  }, true);
-
-  // Safety net: qualsiasi volta la home diventa active, centra
-  const mo = new MutationObserver(() => {
-    if (home.classList.contains('active')) centerNow();
-  });
-  mo.observe(home, { attributes: true, attributeFilter: ['class'] });
-})();
-
     });
   });
+
+  // ==== PATCH LAYOUT-4x2 — pulizia stili inline sul Back (append-only) ====
+  (function enforceHomeGridOnBack(){
+    const home = document.getElementById('step-selection-page');
+    if (!home) return;
+    const grid = home.querySelector('.step-buttons-grid');
+    if (!grid) return;
+
+    function cleanInline() {
+      // rimuove qualsiasi style inline che possa stringere i riquadri
+      grid.removeAttribute('style');
+      if (grid.style) {
+        grid.style.gridTemplateColumns = '';
+        grid.style.gridTemplateRows = '';
+        grid.style.gap = '';
+      }
+    }
+
+    // Dopo qualunque click su un back-button, quando la home è visibile ripulisci
+    document.addEventListener('click', (e) => {
+      const back = e.target.closest('.back-button');
+      if (!back) return;
+      const targetId = back.dataset.backTarget || '';
+      setTimeout(() => {
+        if (targetId === 'step-selection-page' || home.classList.contains('active')) {
+          cleanInline(); // il CSS sopra fa il resto (4x2 responsive)
+        }
+      }, 0);
+    }, true);
+
+    // Safety net: se la home diventa active per altri motivi
+    const mo = new MutationObserver(() => {
+      if (home.classList.contains('active')) cleanInline();
+    });
+    mo.observe(home, { attributes: true, attributeFilter: ['class'] });
+  })();
+
+  // === PATCH 1.1.6 — Forza il centro della dashboard al ritorno (append-only) ===
+  (function centerHomeGridOnActivate(){
+    const home = document.getElementById('step-selection-page');
+    const grid = home ? home.querySelector('.step-buttons-grid') : null;
+    if (!home || !grid) return;
+
+    function centerNow(){
+      // nessuna misura fissa: centratura a contenuto (resta responsive)
+      grid.style.width = 'fit-content';
+      grid.style.marginLeft = 'auto';
+      grid.style.marginRight = 'auto';
+      grid.style.justifyContent = 'center';
+    }
+
+    // Quando premi "Back" e torni alla home, centra
+    document.addEventListener('click', (e) => {
+      const back = e.target.closest('.back-button');
+      if (!back) return;
+      setTimeout(() => {
+        if (home.classList.contains('active')) centerNow();
+      }, 0);
+    }, true);
+
+    // Safety net: qualsiasi volta la home diventa active, centra
+    const mo = new MutationObserver(() => {
+      if (home.classList.contains('active')) centerNow();
+    });
+    mo.observe(home, { attributes: true, attributeFilter: ['class'] });
+  })();
 
   if (chefcodeLogoBtn){
     chefcodeLogoBtn.addEventListener('click', () => showPage('step-selection-page'));
@@ -594,35 +688,44 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
       if (!accountButton.contains(e.target) && !accountDropdownContent.contains(e.target)) {
         accountDropdownContent.style.display = 'none';
       }
-    /* ============ PATCH 1.1.3 — Goods In click fix + Back grid 2x4 ============ */
-/* SOLO aggiunte, nessuna modifica al tuo codice esistente                     */
+    });
+  }
 
-// 1) Goods In: cattura in modo robusto i click sui 3 pulsanti interni
-(function rebindGoodsInButtons(){
+  // ============ GOODS IN NAVIGATION FIX ============
   const goodsInContent = document.getElementById('goods-in-content');
-  if (!goodsInContent) return;
+  console.log('🔍 Goods In Content element:', goodsInContent);
+  
+  if (goodsInContent) {
+    console.log('✅ Aggiunto event listener per GOODS IN');
+    goodsInContent.addEventListener('click', (e) => {
+      const btn = e.target.closest('.big-step-button[data-action]');
+      if (!btn) return;
 
-  // Usiamo capture=true per intercettare il click anche se ci sono figli (icona/span)
-  goodsInContent.addEventListener('click', (e) => {
-    const btn = e.target.closest('.big-step-button[data-action]');
-    if (!btn) return;
+      const action = btn.dataset.action;
+      if (!action) return;
 
-    const action = btn.dataset.action;
-    if (!action) return;
+      console.log('🔍 Click su:', action);
 
-    // Mappa azione -> id pagina interna (sono gli ID che hai già in index.html)
-    const map = {
-      'invoice-photo': 'camera-simulation-page',
-      'voice-input'  : 'voice-input-page-content',
-      'manual-input' : 'manual-input-content'
-    };
-    const targetId = map[action];
-    if (targetId && typeof showPage === 'function') {
-      e.preventDefault();
-      showPage(targetId);
-    }
-  }, true);
-})();
+      // Mappa azione -> id pagina interna
+      const map = {
+        'invoice-photo': 'camera-simulation-page',
+        'voice-input'  : 'voice-input-page-content',
+        'manual-input' : 'manual-input-content'
+      };
+      const targetId = map[action];
+      console.log('🔍 Target ID:', targetId);
+      
+      if (targetId && typeof showPage === 'function') {
+        e.preventDefault();
+        console.log('✅ Calling showPage con:', targetId);
+        showPage(targetId);
+      } else {
+        console.error('❌ Problema navigazione:', { targetId, showPageExists: typeof showPage === 'function' });
+      }
+    }, true);
+  } else {
+    console.error('❌ goods-in-content NON trovato!');
+  }
 
 // 2) Back: quando torni alla dashboard, forziamo la griglia 2×4 come all’inizio
 (function fixBackGrid(){
@@ -642,9 +745,6 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
     }, 0);
   }, true);
 })();
-
-    });
-  }
 
   // ---------- Camera/OCR (sim) ----------
   function renderCameraIdle(){
@@ -783,21 +883,36 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
   }
 
   // Manual Input (sovrascrive submit per evitare doppie append)
+  console.log('🔍 Manual Entry Form:', manualEntryForm);
   if (manualEntryForm){
+    console.log('✅ Manual Entry Form trovato, aggiungo event listener');
     manualEntryForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      console.log('📝 Manual form submitted');
+      
       const name = (el('item-name')?.value || '').trim();
       const qty  = parseFloat(el('item-quantity')?.value || '0');
       const unit = el('item-unit')?.value || 'pz';
       const price= parseFloat(el('item-price')?.value || '0');
       const cat  = el('item-category')?.value || 'Other';
-      if (!name || isNaN(qty) || isNaN(price)){ alert('Inserisci nome, quantità e prezzo validi.'); return; }
+      
+      console.log('📊 Dati inseriti:', { name, qty, unit, price, cat });
+      
+      if (!name || isNaN(qty) || isNaN(price)){ 
+        alert('Inserisci nome, quantità e prezzo validi.'); 
+        return; 
+      }
+      
+      console.log('✅ Dati validi, aggiungo all\'inventario');
       addOrMergeInventoryItem({ name, unit, quantity: qty, category: cat, price });
-      save(); renderInventory();
+      save(); 
+      renderInventory();
       safe(()=>manualEntryForm.reset());
       safe(()=>el('item-name').focus());
       alert(`"${name}" aggiunto in inventario`);
     });
+  } else {
+    console.error('❌ Manual Entry Form NON trovato! Elemento mancante con ID: manual-entry-form');
   }
 
   // Search / Filter

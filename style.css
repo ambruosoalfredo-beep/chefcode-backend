@@ -55,8 +55,20 @@
   flex: 1 1 0;
   display: flex;
   #voice-footer {
-    padding: 8px 0;
+    --footer-padding: 20px 0;
+    --footer-min-height: 64px;
+    padding: var(--footer-padding);
+    min-height: var(--footer-min-height);
     font-size: 0.95em;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 640px) {
+    #voice-footer {
+      --footer-padding: calc(20px + env(safe-area-inset-bottom)) 16px calc(20px + env(safe-area-inset-bottom)) 16px;
+      --footer-min-height: 72px;
+      padding: var(--footer-padding);
+    }
   }
   #voice-btn {
     background: linear-gradient(145deg, #ffffff, #e8e8e8);
