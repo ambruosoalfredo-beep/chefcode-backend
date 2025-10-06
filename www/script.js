@@ -861,21 +861,36 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
   }
 
   // Manual Input (sovrascrive submit per evitare doppie append)
+  console.log('🔍 Manual Entry Form:', manualEntryForm);
   if (manualEntryForm){
+    console.log('✅ Manual Entry Form trovato, aggiungo event listener');
     manualEntryForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      console.log('📝 Manual form submitted');
+      
       const name = (el('item-name')?.value || '').trim();
       const qty  = parseFloat(el('item-quantity')?.value || '0');
       const unit = el('item-unit')?.value || 'pz';
       const price= parseFloat(el('item-price')?.value || '0');
       const cat  = el('item-category')?.value || 'Other';
-      if (!name || isNaN(qty) || isNaN(price)){ alert('Inserisci nome, quantità e prezzo validi.'); return; }
+      
+      console.log('📊 Dati inseriti:', { name, qty, unit, price, cat });
+      
+      if (!name || isNaN(qty) || isNaN(price)){ 
+        alert('Inserisci nome, quantità e prezzo validi.'); 
+        return; 
+      }
+      
+      console.log('✅ Dati validi, aggiungo all\'inventario');
       addOrMergeInventoryItem({ name, unit, quantity: qty, category: cat, price });
-      save(); renderInventory();
+      save(); 
+      renderInventory();
       safe(()=>manualEntryForm.reset());
       safe(()=>el('item-name').focus());
       alert(`"${name}" aggiunto in inventario`);
     });
+  } else {
+    console.error('❌ Manual Entry Form NON trovato! Elemento mancante con ID: manual-entry-form');
   }
 
   // Search / Filter
