@@ -687,40 +687,46 @@ function addOrMergeInventoryItem({ name, unit, quantity, category, price }) {
       if (!accountButton.contains(e.target) && !accountDropdownContent.contains(e.target)) {
         accountDropdownContent.style.display = 'none';
       }
-    /* ============ PATCH 1.1.3 — Goods In click fix + Back grid 2x4 ============ */
-/* SOLO aggiunte, nessuna modifica al tuo codice esistente                     */
+    });
+  }
 
-// 1) Goods In: cattura in modo robusto i click sui 3 pulsanti interni
-(function rebindGoodsInButtons(){
+  // ============ GOODS IN NAVIGATION FIX ============
   const goodsInContent = document.getElementById('goods-in-content');
-  if (!goodsInContent) return;
+  console.log('🔍 Goods In Content element:', goodsInContent);
+  
+  if (goodsInContent) {
+    console.log('✅ Aggiunto event listener per GOODS IN');
+    goodsInContent.addEventListener('click', (e) => {
+      const btn = e.target.closest('.big-step-button[data-action]');
+      if (!btn) return;
 
-  // Usiamo capture=true per intercettare il click anche se ci sono figli (icona/span)
-  goodsInContent.addEventListener('click', (e) => {
-    const btn = e.target.closest('.big-step-button[data-action]');
-    if (!btn) return;
+      const action = btn.dataset.action;
+      if (!action) return;
 
-    const action = btn.dataset.action;
-    if (!action) return;
+      console.log('🔍 Click su:', action);
 
-    // Mappa azione -> id pagina interna (sono gli ID che hai già in index.html)
-    const map = {
-      'invoice-photo': 'camera-simulation-page',
-      'voice-input'  : 'voice-input-page-content',
-      'manual-input' : 'manual-input-content'
-    };
-    const targetId = map[action];
-    console.log('🔍 Click su:', action, '→ Target ID:', targetId);
-    
-    if (targetId && typeof showPage === 'function') {
-      e.preventDefault();
-      console.log('✅ Calling showPage con:', targetId);
-      showPage(targetId);
-    } else {
-      console.error('❌ Problema navigazione:', { targetId, showPageExists: typeof showPage === 'function' });
-    }
-  }, true);
-})();
+      // Mappa azione -> id pagina interna
+      const map = {
+        'invoice-photo': 'camera-simulation-page',
+        'voice-input'  : 'voice-input-page-content',
+        'manual-input' : 'manual-input-content'
+      };
+      const targetId = map[action];
+      console.log('🔍 Target ID:', targetId);
+      
+      if (targetId && typeof showPage === 'function') {
+        e.preventDefault();
+        console.log('✅ Calling showPage con:', targetId);
+        showPage(targetId);
+      } else {
+        console.error('❌ Problema navigazione:', { targetId, showPageExists: typeof showPage === 'function' });
+      }
+    }, true);
+  } else {
+    console.error('❌ goods-in-content NON trovato!');
+  }
+
+}); // End DOMContentLoaded
 
 // 2) Back: quando torni alla dashboard, forziamo la griglia 2×4 come all’inizio
 (function fixBackGrid(){

@@ -1,0 +1,16 @@
+{
+  "name": "ChefCode",
+  "short_name": "ChefCode",
+  "description": "Restaurant Management Platform with AI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2E4E6F",
+  "theme_color": "#2E4E6F",
+  "icons": [
+    {
+      "src": "logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
