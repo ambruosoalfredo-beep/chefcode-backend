@@ -275,10 +275,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
   // --- Riconoscimento vocale e invio al backend ---
-  const voiceBtn = document.getElementById('voice-btn');
-  const voiceMicIcon = document.getElementById('voice-mic-icon');
+  const voiceBtn = document.getElementById('microphone-btn'); // Usa l'ID corretto del pulsante
+  const voiceMicIcon = voiceBtn ? voiceBtn.querySelector('i') : null; // Trova l'icona dentro il pulsante
   const voiceResult = document.getElementById('voice-result');
-  const voiceStatusLabel = document.getElementById('voice-status-label');
+  const voiceStatusLabel = document.getElementById('voice-status');
   let recognition;
   let originalMicColor; // Salva il colore originale dell'icona
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -294,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     voiceBtn.addEventListener('click', () => {
       if (isListening) {
         recognition.stop();
+        if (voiceBtn) voiceBtn.classList.remove('recording'); // Rimuovi classe quando fermato manualmente
         if (voiceStatusLabel) {
           voiceStatusLabel.textContent = 'Recording stopped.';
           setTimeout(() => {
@@ -304,15 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       voiceResult.textContent = '';
       if (voiceStatusLabel) voiceStatusLabel.textContent = 'Listening...';
-      if (voiceMicIcon) {
-        originalMicColor = voiceMicIcon.style.color || getComputedStyle(voiceMicIcon).color; // Salva il colore originale
-        voiceMicIcon.style.color = 'red';
-      }
+      if (voiceBtn) voiceBtn.classList.add('recording'); // Aggiungi classe per effetto rosso
       recognition.start();
       isListening = true;
     });
     recognition.onend = () => {
-      if (voiceMicIcon && originalMicColor !== undefined) voiceMicIcon.style.color = originalMicColor; // Ripristina il colore originale
+      if (voiceBtn) voiceBtn.classList.remove('recording'); // Rimuovi classe per tornare al colore originale
       isListening = false;
       if (voiceStatusLabel) {
         voiceStatusLabel.textContent = 'Recording stopped.';
