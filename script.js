@@ -280,6 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const voiceResult = document.getElementById('voice-result');
   const voiceStatusLabel = document.getElementById('voice-status-label');
   let recognition;
+  let originalMicColor; // Salva il colore originale dell'icona
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
@@ -303,12 +304,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       voiceResult.textContent = '';
       if (voiceStatusLabel) voiceStatusLabel.textContent = 'Listening...';
-      if (voiceMicIcon) voiceMicIcon.style.color = 'red';
+      if (voiceMicIcon) {
+        originalMicColor = voiceMicIcon.style.color || getComputedStyle(voiceMicIcon).color; // Salva il colore originale
+        voiceMicIcon.style.color = 'red';
+      }
       recognition.start();
       isListening = true;
     });
     recognition.onend = () => {
-      if (voiceMicIcon) voiceMicIcon.style.color = '';
+      if (voiceMicIcon && originalMicColor !== undefined) voiceMicIcon.style.color = originalMicColor; // Ripristina il colore originale
       isListening = false;
       if (voiceStatusLabel) {
         voiceStatusLabel.textContent = 'Recording stopped.';
